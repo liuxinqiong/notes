@@ -9,7 +9,7 @@
 	},
 	"miniprogramRoot": "dist/wx/",
 	"compileType": "miniprogram",
-	"appid": "touristappid",
+	"appid": "wx4e5f3ee465de67b2",
 	"projectname": "notes",
 	"condition": {
 		"search": {

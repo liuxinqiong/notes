@@ -1,9 +1,11 @@
-function formatNumber (n) {
+import { RES_CODE } from '@/config'
+
+function formatNumber(n) {
   const str = n.toString()
   return str[1] ? str : `0${str}`
 }
 
-export function formatTime (date) {
+export function formatTime(date) {
   const year = date.getFullYear()
   const month = date.getMonth() + 1
   const day = date.getDate()
@@ -16,6 +18,43 @@ export function formatTime (date) {
   const t2 = [hour, minute, second].map(formatNumber).join(':')
 
   return `${t1} ${t2}`
+}
+
+export function ajax(url, method, data) {
+  return new Promise((resolve, reject) => {
+    wx.request({
+      data,
+      method,
+      url: config.host + url,
+      success: function (res) {
+        if (res.data.code === RES_CODE.OK) {
+          resolve(res.data.data)
+        } else {
+          showModal('失败', res.data.data.msg)
+          reject(res.data)
+        }
+      },
+      error: function (err) {
+        showModal('错误', '未知错误')
+        reject(err)
+      }
+    })
+  })
+}
+
+export function showModal(title, content) {
+  wx.showModal({
+    title,
+    content,
+    showCancel: false
+  })
+}
+
+export function showSuccess(text) {
+  wx.showToast({
+    title: text,
+    icon: 'success'
+  })
 }
 
 export default {
