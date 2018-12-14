@@ -34,6 +34,22 @@ npm run build
 npm run build --report
 ```
 
+#### 协同开发
+分支原则：开发在 dev 分支上，发布使用 master 分支。**因此记得拉取和切换到dev分支做开发**
+
+> 当然，更规范的话，你可以有自己的分支，时不时地往dev分支上合并就可以了。
+
+clone仓库后，默认只能看到本地的master分支，因此你需要创建本地分支并与远程分支关联
+```shell
+# 在本地创建和远程分支对应的分支，本地和远程分支的名称最好一致；
+git checkout -b dev origin/dev
+```
+
+在分支上 git pull 失败了，原因是没有指定本地 dev 分支与远程 origin/dev 分支的链接，根据提示，设置 dev 和 origin/dev 的链接
+```shell
+git branch --set-upstream-to=origin/dev dev
+```
+
 #### 使用说明
 
 1. xxxx
