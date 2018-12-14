@@ -34,7 +34,7 @@ export function ajax(url, method, data) {
           reject(res.data)
         }
       },
-      error: function (err) {
+      fail: function (err) {
         showModal('错误', '未知错误')
         reject(err)
       }
@@ -54,6 +54,22 @@ export function showSuccess(text) {
   wx.showToast({
     title: text,
     icon: 'success'
+  })
+}
+
+export function takePhoto() {
+  return new Promise((resolve, reject) => {
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['camera'],
+      success: function(res) {
+        resolve(res)
+      },
+      fail: function(err) {
+        reject(err)
+      }
+    })
   })
 }
 
