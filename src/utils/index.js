@@ -22,6 +22,7 @@ export function formatTime(date) {
 
 export function ajax(url, method, data) {
   return new Promise((resolve, reject) => {
+    wx.showNavigationBarLoading()
     wx.request({
       data,
       method,
@@ -37,6 +38,9 @@ export function ajax(url, method, data) {
       fail: function (err) {
         showModal('错误', '未知错误')
         reject(err)
+      },
+      complete: function() {
+        wx.hideNavigationBarLoading()
       }
     })
   })
@@ -54,6 +58,13 @@ export function showSuccess(text) {
   wx.showToast({
     title: text,
     icon: 'success'
+  })
+}
+
+export function showFail(text) {
+  wx.showToast({
+    title: text,
+    icon: 'fail'
   })
 }
 

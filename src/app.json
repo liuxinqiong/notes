@@ -1,13 +1,16 @@
 {
   "pages": [
     "pages/index/main",
-    "pages/logs/main",
-    "pages/counter/main"
+    "pages/add-exam",
+    "pages/exam-list",
+    "pages/exam",
+    "pages/counter/main",
+    "pages/logs/main"
   ],
   "window": {
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "WeChat",
-    "navigationBarTextStyle": "black"
+    "navigationBarBackgroundColor": "#5EB6ED",
+    "navigationBarTitleText": "口袋刺猬",
+    "navigationBarTextStyle": "light"
   }
 }
