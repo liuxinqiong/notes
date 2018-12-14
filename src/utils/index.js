@@ -1,4 +1,6 @@
-import { RES_CODE } from '@/config'
+import {
+  RES_CODE
+} from '@/config'
 
 function formatNumber(n) {
   const str = n.toString()
@@ -39,7 +41,7 @@ export function ajax(url, method, data) {
         showModal('错误', '未知错误')
         reject(err)
       },
-      complete: function() {
+      complete: function () {
         wx.hideNavigationBarLoading()
       }
     })
@@ -68,16 +70,48 @@ export function showFail(text) {
   })
 }
 
+export function showLoading(text) {
+  wx.showLoading({
+    title: text
+  })
+}
+
+export function hideLoading() {
+  wx.hideLoading()
+}
+
+export function getImageInfo(imageSrc) {
+  return new Promise((resolve, reject) => {
+    wx.getImageInfo({
+      src: imageSrc,
+      success: function (res) {
+        resolve(res)
+      },
+      fail: function (err) {
+        reject(err)
+      }
+    })
+  })
+}
+
+export function previewImage(current, urls) {
+  urls = urls || [current]
+  wx.previewImage({
+    current: current,
+    urls: urls
+  })
+}
+
 export function takePhoto() {
   return new Promise((resolve, reject) => {
     wx.chooseImage({
       count: 1,
       sizeType: ['compressed'],
       sourceType: ['camera'],
-      success: function(res) {
+      success: function (res) {
         resolve(res)
       },
-      fail: function(err) {
+      fail: function (err) {
         reject(err)
       }
     })
