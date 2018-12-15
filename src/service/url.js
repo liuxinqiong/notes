@@ -5,3 +5,7 @@
 export const USER = {
     LOGIN: ''
 }
+
+export const EXAM = {
+    ADD: '',
+}
