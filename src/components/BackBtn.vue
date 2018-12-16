@@ -18,11 +18,11 @@
 
 <style>
     .back-btn {
-        width: 72rpx;
-        height: 72rpx;
+        width: 83rpx;
+        height: 83rpx;
         position: absolute;
-        left: 53rpx;
-        top: 42rpx;
+        left: 48rpx;
+        top: 36rpx;
     }
 
 </style>
