@@ -1,18 +1,18 @@
 {
-  "pages": [
-    "pages/index/main",
-    "pages/cropper/main",
-    "pages/add-exam/main",
-    "pages/exam-list/main",
-    "pages/exam/main",
-    "pages/counter/main",
-    "pages/logs/main"
-  ],
-  "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#5EB6ED",
-    "navigationBarTitleText": "口袋刺猬",
-    "navigationBarTextStyle": "light"
-  },
-  "cloud": true
+    "pages": [
+        "pages/index/main",
+        "pages/cropper/main",
+        "pages/add-exam/main",
+        "pages/exam-list/main",
+        "pages/exam/main",
+        "pages/counter/main",
+        "pages/logs/main"
+    ],
+    "window": {
+        "backgroundTextStyle": "light",
+        "navigationBarBackgroundColor": "#5EB6ED",
+        "navigationBarTitleText": "口袋刺猬",
+        "navigationBarTextStyle": "light"
+    },
+    "cloud": true
 }

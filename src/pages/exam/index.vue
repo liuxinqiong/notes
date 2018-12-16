@@ -6,18 +6,21 @@
     </div>
 </template>
 <script>
-import Exam from '@/components/exam/exam'
-import Utils from '@/utils'
-import { takePhoto } from '@/utils'
-export default {
-    data() {
-        return {
-            age: ''
+    import Exam from '@/components/exam/exam'
+    import Utils from '@/utils'
+    import {
+        takePhoto
+    } from '@/utils'
+    export default {
+        data() {
+            return {
+                age: ''
+            }
+        },
+
+        components: {
+            Exam
         }
-    },
-    
-    components: {
-        Exam
     }
-}
+
 </script>
