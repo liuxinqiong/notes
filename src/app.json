@@ -13,5 +13,6 @@
     "navigationBarBackgroundColor": "#5EB6ED",
     "navigationBarTitleText": "口袋刺猬",
     "navigationBarTextStyle": "light"
-  }
+  },
+  "cloud": true
 }
