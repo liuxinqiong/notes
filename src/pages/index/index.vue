@@ -64,9 +64,9 @@
                 console.log("clickHandle:", msg, ev);
             },
             async takePhote() {
-                const temp = await takePhoto();
+                const tempFilePath = await takePhoto();
                 wx.navigateTo({
-                    url: `/pages/cropper/main?src=${temp.tempFilePaths[0]}`
+                    url: `/pages/cropper/main?src=${tempFilePath}`
                 })
             },
             test() {

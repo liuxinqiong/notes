@@ -99,10 +99,9 @@
         },
         methods: {
             // 加载图片
-            async loadImage() {
+            async loadImage(src) {
                 showLoading("图片加载中");
-                var res = await getImageInfo(this.imageSrc);
-                debugger
+                var res = await getImageInfo(src);
                 DRAW_IMAGE_W = IMG_REAL_W = res.width;
                 IMG_REAL_H = res.height;
                 IMG_RATIO = IMG_REAL_W / IMG_REAL_H;
@@ -160,6 +159,7 @@
                     this.qualityWidth = DRAW_IMAGE_W;
                     this.innerAspectRadio = IMG_RATIO;
                 }
+                this.imageSrc = src
                 this.isShowImg = true;
                 hideLoading();
             },
@@ -299,12 +299,12 @@
             },
         },
         mounted() {
-            this.imageSrc = this.$root.$mp.query.src
-            if(!this.imageSrc) {
+            const src = this.$root.$mp.query.src
+            if(!src) {
                 showModal('提示', '缺少源图片')
                 return
             }
-            this.loadImage();
+            this.loadImage(src);
         }
     };
 

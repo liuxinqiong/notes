@@ -107,9 +107,18 @@ export function takePhoto() {
         wx.chooseImage({
             count: 1,
             sizeType: ['compressed'],
-            sourceType: ['camera'],
+            sourceType: ['album'],
             success: function (res) {
-                resolve(res)
+                wx.compressImage({
+                    src: res.tempFilePaths[0],
+                    quality: 10,
+                    success:  function(res) {
+                        resolve(res.tempFilePath)
+                    },
+                    fail: function(err) {
+                        reject(err)
+                    }
+                })
             },
             fail: function (err) {
                 reject(err)
