@@ -118,17 +118,27 @@ export function takePhoto() {
     })
 }
 
-export function fixBugInAndroid (source) {
+
+export function arrayRemove(array, func) {
+    for (let index = 0; index < array.length; index++) {
+        if (func(array[index])) {
+            array.splice(index, 1);
+        }
+    }
+
+}
+
+export function fixBugInAndroid(source) {
     const safe = 1200
     const isAndroid = wx.getSystemInfoSync().platform === 'android'
-    if(!isAndroid) {
+    if (!isAndroid) {
         return
     }
     const ratio = source.width / source.height;
-    if(ratio >= 1 && source.width > safe) {
+    if (ratio >= 1 && source.width > safe) {
         source.width = safe
         source.height = source.width / ratio
-    } else if(ratio < 1 && source.height > safe){
+    } else if (ratio < 1 && source.height > safe) {
         source.height = safe
         source.width = source.height * ratio
     }

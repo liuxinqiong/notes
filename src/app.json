@@ -1,10 +1,10 @@
 {
     "pages": [
+        "pages/exam-list/main",
+        "pages/exam/main",
         "pages/cropper/main",
         "pages/index/main",
         "pages/add-exam/main",
-        "pages/exam-list/main",
-        "pages/exam/main",
         "pages/counter/main",
         "pages/logs/main"
     ],
