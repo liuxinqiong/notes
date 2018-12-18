@@ -34,5 +34,6 @@
         <style>button::after {
             border: none;
         }
+    }
 
 </style>
