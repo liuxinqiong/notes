@@ -12,6 +12,7 @@
 
 </script>
 
+<<<<<<< HEAD
 <style scoped>
     .container {
         height: 100%;
@@ -29,6 +30,11 @@
         -moz-transition: width 2s;
         -webkit-transition: width 2s;
         -o-transition: width 2s;
+=======
+<style>
+    button::after {
+        border: none;
+>>>>>>> bdacaa53bde826cdc5308a8eeffd68c0717d0677
     }
 
 </style>

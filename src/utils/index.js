@@ -107,9 +107,9 @@ export function takePhoto() {
         wx.chooseImage({
             count: 1,
             sizeType: ['compressed'],
-            sourceType: ['camera'],
+            sourceType: ['camera'], // album/camera
             success: function (res) {
-                resolve(res)
+                resolve(res.tempFilePaths[0])
             },
             fail: function (err) {
                 reject(err)
@@ -117,6 +117,7 @@ export function takePhoto() {
         })
     })
 }
+
 
 export function arrayRemove(array, func) {
     for (let index = 0; index < array.length; index++) {
@@ -126,6 +127,23 @@ export function arrayRemove(array, func) {
     }
 
 }
+
+export function fixBugInAndroid(source) {
+    const safe = 1200
+    const isAndroid = wx.getSystemInfoSync().platform === 'android'
+    if (!isAndroid) {
+        return
+    }
+    const ratio = source.width / source.height;
+    if (ratio >= 1 && source.width > safe) {
+        source.width = safe
+        source.height = source.width / ratio
+    } else if (ratio < 1 && source.height > safe) {
+        source.height = safe
+        source.width = source.height * ratio
+    }
+}
+
 export default {
     formatNumber,
     formatTime

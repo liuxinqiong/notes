@@ -33,8 +33,7 @@
         data() {
             return {
                 motto: "Hello World",
-                userInfo: {},
-                temp: []
+                userInfo: {}
             };
         },
 
@@ -65,7 +64,15 @@
                 console.log("clickHandle:", msg, ev);
             },
             async takePhote() {
-                this.temp = await takePhoto();
+                try {
+                    const tempFilePath = await takePhoto();
+                    console.log(tempFilePath)
+                    wx.navigateTo({
+                        url: `/pages/cropper/main?src=${tempFilePath}`
+                    })
+                } catch(e) {
+                    console.log(e)
+                }
             },
             test() {
                 wx.cloud.callFunction({
