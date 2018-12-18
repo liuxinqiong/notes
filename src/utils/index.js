@@ -118,14 +118,6 @@ export function takePhoto() {
     })
 }
 
-export function arrayRemove(array, func) {
-    for (let index = 0; index < array.length; index++) {
-        if (func(array[index])) {
-            array.splice(index, 1);
-        }
-    }
-
-}
 export default {
     formatNumber,
     formatTime
