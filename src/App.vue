@@ -12,7 +12,7 @@
 
 </script>
 
-<style>
+<style scoped>
     .container {
         height: 100%;
         display: flex;
