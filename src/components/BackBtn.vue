@@ -16,7 +16,7 @@
 
 </script>
 
-<style>
+<style scoped>
     .back-btn {
         width: 83rpx;
         height: 83rpx;
