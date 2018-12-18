@@ -29,7 +29,7 @@
         </div>
         <div class="cropper-config">
             <button type="primary reverse" @click="generateImage" style="margin-top: 30rpx;">预览</button>
-            <button type="primary" @click="generateImage" style="margin-top: 30rpx;">确定</button>
+            <button type="primary" @click="generateImage(true)" style="margin-top: 30rpx;">确定</button>
         </div>
         <canvas canvas-id="myCanvas" :style="{
         position: 'absolute',
@@ -43,10 +43,12 @@
 <script>
     import {
         getImageInfo,
+        takePhoto,
         showLoading,
         hideLoading,
         previewImage,
-        showModal
+        showModal,
+        fixBugInAndroid
     } from "@/utils";
     let SCREEN_WIDTH = 750;
     let PAGE_X, // 手按下的x位置
@@ -56,8 +58,8 @@
         T_PAGE_Y, // 手移动的时候Y的位置
         CUT_L, // 初始化拖拽元素的left值
         CUT_T, // 初始化拖拽元素的top值
-        CUT_R, // 初始化拖拽元素的
-        CUT_B, // 初始化拖拽元素的
+        CUT_R, // 初始化拖拽元素的right值
+        CUT_B, // 初始化拖拽元素的bottom值
         CUT_W, // 初始化拖拽元素的宽度
         CUT_H, //  初始化拖拽元素的高度
         IMG_RATIO, // 图片比例
@@ -102,6 +104,7 @@
             async loadImage(src) {
                 showLoading("图片加载中");
                 var res = await getImageInfo(src);
+                fixBugInAndroid(res)
                 DRAW_IMAGE_W = IMG_REAL_W = res.width;
                 IMG_REAL_H = res.height;
                 IMG_RATIO = IMG_REAL_W / IMG_REAL_H;
@@ -164,7 +167,7 @@
                 hideLoading();
             },
             // 生成预览图片
-            generateImage() {
+            generateImage(sure) {
                 showLoading("图片生成中");
                 // 将图片写入画布
                 const ctx = wx.createCanvasContext("myCanvas");
@@ -185,10 +188,14 @@
                         height: canvasH,
                         destWidth: canvasW,
                         destHeight: canvasH,
-                        quality: 0.5,
+                        quality: 0.8,
                         canvasId: "myCanvas",
                         success: function (res) {
                             hideLoading();
+                            if(sure) {
+                                // 跳转到增加页
+                                return
+                            }
                             // 成功获得地址的地方
                             previewImage(res.tempFilePath);
                         }

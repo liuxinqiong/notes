@@ -107,24 +107,31 @@ export function takePhoto() {
         wx.chooseImage({
             count: 1,
             sizeType: ['compressed'],
-            sourceType: ['album'],
+            sourceType: ['camera'], // album/camera
             success: function (res) {
-                wx.compressImage({
-                    src: res.tempFilePaths[0],
-                    quality: 10,
-                    success:  function(res) {
-                        resolve(res.tempFilePath)
-                    },
-                    fail: function(err) {
-                        reject(err)
-                    }
-                })
+                resolve(res.tempFilePaths[0])
             },
             fail: function (err) {
                 reject(err)
             }
         })
     })
+}
+
+export function fixBugInAndroid (source) {
+    const safe = 1200
+    const isAndroid = wx.getSystemInfoSync().platform === 'android'
+    if(!isAndroid) {
+        return
+    }
+    const ratio = source.width / source.height;
+    if(ratio >= 1 && source.width > safe) {
+        source.width = safe
+        source.height = source.width / ratio
+    } else if(ratio < 1 && source.height > safe){
+        source.height = safe
+        source.width = source.height * ratio
+    }
 }
 
 export default {
