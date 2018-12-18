@@ -23,7 +23,7 @@
         background-size: cover;
     }
     .repaint {
-        background: url('../../../static/img/repaint.png') no-repeat;
+        background: url('./img/repaint.png') no-repeat;
         background-size: cover;
     }
     .save {

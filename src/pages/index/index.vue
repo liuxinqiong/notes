@@ -64,10 +64,15 @@
                 console.log("clickHandle:", msg, ev);
             },
             async takePhote() {
-                const temp = await takePhoto();
-                wx.navigateTo({
-                    url: `/pages/cropper/main?src=${temp.tempFilePaths[0]}`
-                })
+                try {
+                    const tempFilePath = await takePhoto();
+                    console.log(tempFilePath)
+                    wx.navigateTo({
+                        url: `/pages/cropper/main?src=${tempFilePath}`
+                    })
+                } catch(e) {
+                    console.log(e)
+                }
             },
             test() {
                 wx.cloud.callFunction({
