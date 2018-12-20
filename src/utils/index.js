@@ -66,7 +66,7 @@ export function showSuccess(text) {
 export function showFail(text) {
     wx.showToast({
         title: text,
-        icon: 'fail'
+        icon: 'none'
     })
 }
 
