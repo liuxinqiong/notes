@@ -25,6 +25,7 @@
 <style lang="scss" scoped>
     .add-exam {
         padding: 52rpx 18rpx;
+
         .img {
             width: 100%;
         }
