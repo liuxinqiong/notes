@@ -25,13 +25,30 @@
             </div>
         </fixed-view>
         <layer ref="share">
-            <div>123</div>
+            <div class="share-layer">
+                <div class="share-img">
+                    <i class="close" @click="closeShare"></i>
+                    <div class="star-container">
+                        <star :count="2"></star>
+                    </div>
+                    <div class="result">完成<span class="num">8</span>题</div>
+                    <div class="user">
+                        <span class="name">wan啦啦</span>
+                    </div>
+                    <div class="des">正在使用错题库记忆哦！<br/>快来参加吧</div>
+                    <div class="code">
+                        <img src="../../assets/img/code.jpg" alt="">
+                    </div>
+                </div>
+                <button class="save-local">保存到本地分享</button>
+            </div>
         </layer>
     </div>
 </template>
 <script>
     import fixedView from '@/components/fixed-view'
     import layer from '@/components/layer'
+    import star from '@/components/star/star'
     const MODE = {
         STUDY: 0,
         EXAM: 1
@@ -44,7 +61,8 @@
         },
         components: {
             fixedView,
-            layer
+            layer,
+            star
         },
         methods: {
             leftHandler(e) {
@@ -52,12 +70,19 @@
             },
             rightHander() {
                 console.log('right clicked')
+            },
+            closeShare() {
+                this.$refs.share.hide()
             }
+        },
+        mounted() {
+            this.$refs.share.show()
         }
     }
 
 </script>
 <style lang="scss" scoped>
+    @import '@/styles/mixin.scss';
     .exam {
         height: 100%;
         position: relative;
@@ -74,7 +99,6 @@
         .img-wrapper {
             img {
                 width: 100%;
-                height: 1000rpx;
             }
 
             .time {
@@ -161,4 +185,65 @@
         }
     }
 
+    .share-layer {
+        .share-img {
+            width: 681rpx;
+            height: 998rpx;
+            background: url('./img/share-bg.png') no-repeat;
+            background-size: 100% 100%;
+            margin: auto;
+            position: relative;
+            overflow: hidden;
+            .close {
+                position: absolute;
+                width: 22rpx;
+                height: 22rpx;
+                background: url('../../assets/img/close.png') no-repeat;
+                background-size: 100% 100%;
+                right: 44rpx;
+                top: 44rpx;
+            }
+            .star-container {
+                margin-top: 147rpx;
+            }
+            .result {
+                margin-top: 32rpx;
+                text-align: center;
+                font-size: 38rpx;
+                color: #75AD82;
+                .num {
+                    font-size: 74rpx;
+                }
+            }
+            .user {
+                margin-top: 57rpx;
+                margin-bottom: 49rpx;
+                font-size: 24rpx;
+                color: #75AD82;
+                text-align: center;
+            }
+            .des {
+                text-align: center;
+                color: #878787;
+                font-size: 24rpx;
+            }
+            .code {
+                margin-top: 51rpx;
+                text-align: center;
+                img {
+                    width: 209rpx;
+                    height: 209rpx;
+                    border-radius: 14px;
+                }
+            }
+        }
+        .save-local {
+            width: 515rpx;
+            line-height: 99rpx;
+            background: url('./img/share-btn.png') no-repeat;
+            background-size: 100% 100%;
+            font-size: 28rpx;
+            color: #fff;
+        }
+    }
 </style>
