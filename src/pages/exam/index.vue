@@ -202,6 +202,7 @@
                 background-size: 100% 100%;
                 right: 44rpx;
                 top: 44rpx;
+                @include extend-click;/*it worked, only can't see the element*/
             }
             .star-container {
                 margin-top: 147rpx;
