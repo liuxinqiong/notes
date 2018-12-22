@@ -1,10 +1,15 @@
-import { ajax, showFail } from '@/utils'
-import { USER } from './url'
+import {
+    ajax,
+    showFail
+} from '@/utils'
+import {
+    USER
+} from './url'
 
 export function login() {
     wx.login({
         success(res) {
-            if(res.code) {
+            if (res.code) {
                 return ajax({
                     url: USER.LOGIN,
                     data: {

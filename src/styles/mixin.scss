@@ -1,0 +1,27 @@
+// 不换行
+@mixin no-wrap {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+// 扩展点击区域
+@mixin extend-click {
+    &::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+    }
+}
+
+@mixin line-number($n: 2) {
+    display: -webkit-box;
+    /*! autoprefixer: off */
+    -webkit-box-orient: vertical;
+    /* autoprefixer: on */
+    -webkit-line-clamp: $n;
+    overflow: hidden;
+}
