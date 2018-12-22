@@ -42,7 +42,7 @@
     <a @click="takePhote">
       <img src="../../components/index/img/photograph.png" class="photo">
     </a>
-    <a href="/pages/exam/exam-list">
+    <a href="/pages/exam/exam-list/main">
       <img src="../../components/index/img/group.png" class="group">
     </a>
 
