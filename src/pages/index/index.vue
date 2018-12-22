@@ -9,7 +9,9 @@
       <a href="pages/exam/main">
         <img src="../../components/index/img/recite.png" class="recite">
       </a>
-      <img src="../../components/index/img/test.png" class="test">
+      <a href="pages/exam/main">
+        <img src="../../components/index/img/test.png" class="test">
+      </a>
       <div class="text">
         <div>
           1.通过手机拍照，并且，涂抹答案，录入题库
@@ -40,7 +42,7 @@
       <input type="text" class="form-control" v-model="motto" placeholder="v-model" />
       <input type="text" class="form-control" v-model.lazy="motto" placeholder="v-model.lazy" />
     </form>
-    <a href="/pages/counter/main" class="counter">去往Vuex示例页面</a>
+    <!-- <a href="/pages/counter/main" class="counter">去往Vuex示例页面</a> -->
     <a @click="takePhote">
       <img src="../../components/index/img/photograph.png" class="photo">
     </a>
