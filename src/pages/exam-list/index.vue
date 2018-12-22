@@ -16,8 +16,8 @@
         <div class='exam-list'>
             <div class='real-content'>
                 <div class='exam-wrapper'>
-                    <exam-item ref='examItem' v-for='exam in examList' @click="itemClick($event,exam)" :exam='exam'
-                        :isEidt='isEidt' :key='exam.id'></exam-item>
+                    <exam-item ref='examItem' v-for='(exam,index) in examList' @click="itemClick($event,exam)" :exam='exam'
+                        :isEidt='isEidt' :key='index'></exam-item>
                 </div>
             </div>
 
@@ -38,7 +38,8 @@
     import ExamItem from '@/components/exam/exam-item';
     import {
         showModal,
-        arrayRemove
+        arrayRemove,
+        getUserOpenId
     } from '@/utils';
     import {
         doTest
@@ -120,15 +121,31 @@
             goBack: function () {
                 //返回首页
             },
-            addExam: function () {},
-            editExam: function () {
+            addExam: function () {
+                const url = "../add-exam/main"; //跳转到题目增加页面
+                wx.navigateTo({
+                    url
+                });
+            },
+            editExam: async function () {
                 this.isEidt = this.isEidt ? false : true;
+                console.log(await getUserOpenId());
             },
             deleteExam: function () {
                 if (this.deleteList.length <= 0) {
                     showModal('提示', '请选择要删除的题目');
                 } else {
                     //去云数据库删除
+                    for (let index = 0; index < this.deleteList.length; index++) {
+                        const element = this.deleteList[index];
+                        console.log(element);
+                        arrayRemove(this.examList, function (n) {
+
+                            return n.id === element.id;
+                        });
+                    }
+                    this.isEidt = false;
+                    //  this.examList = [];
                 }
 
             },

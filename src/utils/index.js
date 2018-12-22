@@ -144,6 +144,16 @@ export function fixBugInAndroid(source) {
     }
 }
 
+export async function getUserOpenId() {
+    const res = await wx.cloud.callFunction({
+        // 要调用的云函数名称
+        name: 'wxContext',
+    }).catch(err => {
+        showFail('获取用户信息失败');
+    })
+    return res.result;
+}
+
 export default {
     formatNumber,
     formatTime
