@@ -6,7 +6,9 @@
     <div class="main-card">
       <img src="../../components/index/img/center.png" class="center">
       <img src="../../components/index/img/subject.png" class="subject">
-      <img src="../../components/index/img/recite.png" class="recite">
+      <a href="pages/exam/main">
+        <img src="../../components/index/img/recite.png" class="recite">
+      </a>
       <img src="../../components/index/img/test.png" class="test">
       <div class="text">
         <div>
