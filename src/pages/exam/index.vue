@@ -9,18 +9,18 @@
                         <p class="time">2018.9.16 13:25</p>
                     </div>
                     <div class="buttons">
-                        <button class="scrawl"></button>
-                        <button class="eraser"></button>
-                        <button class="clear"></button>
-                        <button class="save"></button>
+                        <button class="scrawl" @click="scrawl"></button>
+                        <button class="eraser" @click="eraser"></button>
+                        <button class="clear" @click="clear"></button>
+                        <button class="save" @click="save"></button>
                     </div>
                 </div>
                 <div class="bottom">
-                    <button class="mode1 error" v-if="mode" @click="leftHandler"></button>
-                    <button class="mode0 prev" v-if="!mode" @click="leftHandler"></button>
+                    <button class="mode1 error" v-if="mode" @click="errorHandler"></button>
+                    <button class="mode0 prev" v-if="!mode" @click="prevHandler"></button>
                     <p class="info">已完成8题目</p>
-                    <button class="mode1 right" v-if="mode" @click="rightHander"></button>
-                    <button class="mode0 next" v-if="!mode"></button>
+                    <button class="mode1 right" v-if="mode" @click="rightHandler"></button>
+                    <button class="mode0 next" v-if="!mode" @click="nextHandle"></button>
                 </div>
             </div>
         </fixed-view>
@@ -40,14 +40,14 @@
                         <img src="../../assets/img/code.jpg" alt="">
                     </div>
                 </div>
-                <button class="save-local">保存到本地分享</button>
+                <button class="save-local" @click="saveLocal">保存到本地分享</button>
             </div>
         </layer>
     </div>
 </template>
 <script>
-    import fixedView from '@/components/fixed-view'
-    import layer from '@/components/layer'
+    import fixedView from '@/components/fixed-view/fixed-view'
+    import layer from '@/components/layer/layer'
     import star from '@/components/star/star'
     const MODE = {
         STUDY: 0,
@@ -65,18 +65,39 @@
             star
         },
         methods: {
-            leftHandler(e) {
+            scrawl() {
+
+            },
+            eraser() {
+
+            },
+            clear() {
+
+            },
+            save() {
+
+            },
+            errorHandler(e) {
                 this.$refs.share.show()
             },
-            rightHander() {
+            rightHandler() {
+
+            },
+            prevHandler() {
                 console.log('right clicked')
+            },
+            nextHandle() {
+
             },
             closeShare() {
                 this.$refs.share.hide()
+            },
+            saveLocal() {
+
             }
         },
         mounted() {
-            this.$refs.share.show()
+           this.mode = +this.$root.$mp.query.mode
         }
     }
 

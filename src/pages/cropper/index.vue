@@ -28,7 +28,7 @@
             </div>
         </div>
         <div class="cropper-config">
-            <button type="primary reverse" @click="generateImage" style="margin-top: 30rpx;">预览</button>
+            <button type="primary reverse" @click="generateImage(false)" style="margin-top: 30rpx;">预览</button>
             <button type="primary" @click="generateImage(true)" style="margin-top: 30rpx;">确定</button>
         </div>
         <canvas canvas-id="myCanvas" :style="{
@@ -194,6 +194,9 @@
                             hideLoading();
                             if(sure) {
                                 // 跳转到增加页
+                                wx.redirectTo({
+                                    url: `/pages/add-exam/main?src=${res.tempFilePath}`
+                                });
                                 return
                             }
                             // 成功获得地址的地方

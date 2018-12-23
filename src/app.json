@@ -1,12 +1,11 @@
 {
     "pages": [
+        "pages/index/main",
         "pages/exam/main",
         "pages/exam-list/main",
         "pages/cropper/main",
-        "pages/index/main",
         "pages/add-exam/main",
-        "pages/counter/main",
-        "pages/logs/main"
+        "pages/counter/main"
     ],
     "window": {
         "backgroundTextStyle": "light",

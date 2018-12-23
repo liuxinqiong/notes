@@ -34,8 +34,8 @@
     </div>
 </template>
 <script>
-    import BackBtn from '@/components/BackBtn';
-    import ExamItem from '@/components/exam/exam-item';
+    import BackBtn from '@/components/back-btn/back-btn';
+    import ExamItem from '@/components/exam-item/exam-item';
     import {
         showModal,
         arrayRemove,

@@ -2,8 +2,7 @@
     <fixed-view>
         <div class="add-exam">
             <div class="img-wrapper">
-                <img class="img" src="https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg"
-                    alt="">
+                <img class="img" :src="src" alt="">
             </div>
             <div class="buttons">
                 <button class="btn back"></button>
@@ -14,10 +13,18 @@
     </fixed-view>
 </template>
 <script>
-    import fixedView from '@/components/fixed-view'
+    import fixedView from '@/components/fixed-view/fixed-view'
     export default {
+        data() {
+            return {
+                src: ''
+            }
+        },
         components: {
             fixedView
+        },
+        mounted () {
+            this.src = this.$root.$mp.query.src
         }
     }
 

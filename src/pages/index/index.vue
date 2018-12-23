@@ -1,203 +1,182 @@
 <template>
-    <div class="container" @click="clickHandle('test click', $event)">
-        <img src="../../components/index/img/background.png" class="bg">
-        <img src="../../components/index/img/star.png" class="star">
-
+    <div class="container">
+        <img src="../../assets/img/background.png" class="bg">
+        <div class="top">
+            <span class="star">
+                <span class="text">20</span>
+            </span>
+            <a href="/pages/exam-list/main" class="group"></a>
+        </div>
         <div class="main-card">
-            <img src="../../components/index/img/center.png" class="center">
-            <img src="../../components/index/img/subject.png" class="subject">
-            <a href="pages/exam/main">
-                <img src="../../components/index/img/recite.png" class="recite">
-            </a>
-            <a href="pages/exam/main">
-                <img src="../../components/index/img/test.png" class="test">
-            </a>
-            <div class="text">
-                <div>
-                    1.通过手机拍照，并且，涂抹答案，录入题库
+            <div class="content">
+                <div class="logo">
+                    <img src="./img/subject.png" alt="">
                 </div>
-                <div>
-
-                    2.点击开始，开始答题，答题后，判断对错。
+                <div class="info">
+                    <p class="text">1.通过手机拍照，并且，涂抹答案，录入题库</p>
+                    <p class="text">2.点击开始，开始答题，答题后，判断对错。</p>
+                    <p class="text">3.根据记忆曲线，给出题库里的类容。</p>
                 </div>
-                <div>
-                    3.根据记忆曲线，给出题库里的类容。
+                <div class="buttons">
+                    <a href="/pages/exam/main?mode=0" class="recite"></a>
+                    <a href="/pages/exam/main?mode=1" class="test"></a>
                 </div>
             </div>
         </div>
-        <div class="userinfo" @click="bindViewTap">
-            <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
-            <div class="userinfo-nickname">
-                <card :text="userInfo.nickName"></card>
-            </div>
+        <div class="bottom">
+            <button class="add-exam" @click="addExam"></button>
         </div>
-
-        <div class="container" @click="clickHandle('test click', $event)">
-
-            <div class="userinfo" @click="bindViewTap">
-                <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
-                <div class="userinfo-nickname">
-                    <card :text="userInfo.nickName"></card>
-                </div>
-            </div>
-            >>>>>>> 572fb3e7ef09f267a6af69f9d3c2ba980767406c
-
-            <div class="usermotto">
-                <div class="user-motto">
-                    <card :text="motto"></card>
-                </div>
-            </div>
-
-            <form class="form-container">
-                <input type="text" class="form-control" v-model="motto" placeholder="v-model" />
-                <input type="text" class="form-control" v-model.lazy="motto" placeholder="v-model.lazy" />
-            </form>
-            <!-- <a href="/pages/counter/main" class="counter">去往Vuex示例页面</a> -->
-            <a @click="takePhote">
-                <img src="../../components/index/img/photograph.png" class="photo">
-            </a>
-            <a href="/pages/exam/exam-list/main">
-                <img src="../../components/index/img/group.png" class="group">
-            </a>
-
-            <!-- <button @click.stop="setCache">set</button>
-            <button @click.stop="getCache">get</button> -->
-        </div>
+    </div>
 </template>
-
-<style lang="scss" scoped>
-    .userinfo {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .userinfo-avatar {
-        width: 128rpx;
-        height: 128rpx;
-        margin: 20rpx;
-        border-radius: 50%;
-    }
-
-    .userinfo-nickname {
-        color: #aaa;
-    }
-
-    .usermotto {
-        margin-top: 150px;
-    }
-
-    .form-control {
-        display: block;
-        padding: 0 12px;
-        margin-bottom: 5px;
-        border: 1px solid #ccc;
-    }
-
-    .counter {
-        display: inline-block;
-        margin: 10px auto;
-        padding: 5px 10px;
-        color: blue;
-        border: 1px solid blue;
-    }
-</style>
-// <form class="form-container"><input type="text" class="form-control" v-model="motto" placeholder="v-model" /><input
-        type="text" class="form-control" v-model.lazy="motto" placeholder="v-model.lazy" /></form><a href="/pages/counter/main"
-    class="counter">去往Vuex示例页面</a><a @click="takePhote">拍照</a><button @click="test">test</button></div></template>
 <script>
-    import card from "@/components/card";
-    import './index.scss'
-    import {
-        takePhoto,
-        showSuccess
-    } from "@/utils";
+    import { takePhoto } from "@/utils";
 
     export default {
-        data() {
-            return {
-                motto: "Hello World",
-                userInfo: {}
-            }
-
-            ;
-        },
-
-        components: {
-            card
-        },
-
         methods: {
-            bindViewTap() {
-                const url = "../logs/main";
-
-                wx.navigateTo({
-                        url
-                    }
-
-                );
-            }
-
-            ,
-            getUserInfo() {
-
-                // 调用登录接口
-                wx.login({
-                        success: () => {
-                            wx.getUserInfo({
-                                success: res => {
-                                    this.userInfo = res.userInfo;
-                                }
-                            });
-                        }
-                    }
-
-                );
-            }
-
-            ,
-            clickHandle(msg, ev) {
-                console.log("clickHandle:", msg, ev);
-            },
-            async takePhote() {
+            async addExam() {
                 try {
                     const tempFilePath = await takePhoto();
-
-                    console.log(tempFilePath);
                     wx.navigateTo({
-                            url: `/pages/cropper/main?src=$ {tempFilePath}`
+                            url: `/pages/cropper/main?src=${tempFilePath}`
                         }
-
                     )
                 } catch (e) {
                     console.log(e)
                 }
             },
-            test() {
-                wx.cloud.callFunction({
-
-                        // 云函数名称
-                        name: 'add',
-                        // 传给云函数的参数
-                        data: {
-                            a: 1,
-                            b: 2,
-                        },
-                        success(res) {
-                            console.log(res.result.sum) // 3
-                        },
-                        fail: console.error
-                    }
-
-                )
-            }
         },
-
         created() {
-            // 调用应用实例的方法获取全局数据
-            this.getUserInfo();
+
         },
         mounted() {}
     }
 
 </script>
+<style lang="scss" scoped>
+    .container {
+        position: absolute;
+        top: 0;
+        bottom: -200rpx;
+        left: 0;
+        right: 0;
+        overflow: auto;
+        .bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .top {
+            padding: 32rpx 59rpx 61rpx 52rpx;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            .star {
+                width: 166rpx;
+                height: 88rpx;
+                background: url('./img/star.png') no-repeat;
+                background-size: 100% 100%;
+                font-size: 26rpx;
+                color: #fff;
+                text-align: center;
+                .text {
+                    position: relative;
+                    top: 30rpx;
+                    left: 30rpx;
+                }
+            }
+
+            .group {
+                width: 217rpx;
+                height: 73rpx;
+                background: url('./img/group.png') no-repeat;
+                background-size: 100% 100%;
+            }
+        }
+
+        // 边框
+        .main-card {
+            width: 630rpx;
+            height: 958rpx;
+            background: rgba(136, 200, 125, 1);
+            border-top-left-radius: 315rpx 88rpx;
+            border-top-right-radius: 315rpx 88rpx;
+            border-bottom-left-radius: 44rpx;
+            border-bottom-right-radius: 44rpx;
+            margin: auto;
+            box-sizing: border-box;
+            position: relative;
+            padding: 38rpx 30rpx;
+            .content {
+                background: rgba(240, 242, 213, 1);
+                box-shadow: 0px 4px 0px 0px rgba(255,255,255,0.76);
+                border-top-left-radius: 284rpx 80rpx;
+                border-top-right-radius: 284rpx 80rpx;
+                border-bottom-left-radius: 44rpx;
+                border-bottom-right-radius: 44rpx;
+                width: 569rpx;
+                height: 881rpx;
+                overflow: hidden;
+                .logo {
+                    text-align: center;
+                    margin-top: 73rpx;
+                    img {
+                        width: 349rpx;
+                        height: 133rpx;
+                    }
+                }
+                .info {
+                    margin-top: 12rpx;
+                    width: 479rpx;
+                    height: 344rpx;
+                    margin: auto;
+                    background: url('./img/center.png') no-repeat;
+                    background-size: 100% 100%;
+                    color: #C65D00;
+                    font-size: 24rpx;
+                    box-sizing: border-box;
+                    padding: 80rpx 56rpx 0 65rpx;
+                    .text {
+                        line-height: 28rpx;
+                    }
+                    .text + .text {
+                        margin-top: 22rpx;
+                    }
+                }
+                .buttons {
+                    margin-top: 17rpx;
+                    a {
+                        display: block;
+                        margin: auto;
+                        width: 433rpx;
+                        height: 150rpx;
+                    }
+                    .recite {
+                        background: url('./img/recite.png') no-repeat;
+                        background-size: 100% 100%;
+                    }
+                    .test {
+                        background: url('./img/test.png') no-repeat;
+                        background-size: 100% 100%;
+                        position: relative;
+                        top: -17rpx;
+                    }
+                }
+            }
+        }
+        .bottom {
+            margin-top: 75rpx;
+            height: 68rpx;
+            padding: 75rpx 90rpx 52rpx;
+            .add-exam {
+                width: 186rpx;
+                height: 68rpx;
+                background: url('./img/photograph.png') no-repeat;
+                background-size: 100% 100%;
+                float: right;
+            }
+        }
+    }
+</style>

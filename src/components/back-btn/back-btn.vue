@@ -1,5 +1,5 @@
 <template>
-    <img class='back-btn' src='../assets/img/back.png' @click='goBack' />
+    <img class='back-btn' src='../../assets/img/back.png' @click='goBack' />
 </template>
 
 <script>

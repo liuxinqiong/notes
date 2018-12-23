@@ -1,6 +1,6 @@
 <template>
     <div class="fixed-view">
-        <img class="bg" src="../assets/img/background.png" alt="">
+        <img class="bg" src="../../assets/img/background.png" alt="">
         <div class="top">
             <button class="back" @click="backHome"></button>
         </div>
@@ -45,7 +45,7 @@
             .back {
                 width: 72rpx;
                 height: 72rpx;
-                background: url('../assets/img/back.png') no-repeat;
+                background: url('../../assets/img/back.png') no-repeat;
                 background-size: cover;
             }
         }
