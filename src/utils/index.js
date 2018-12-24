@@ -154,6 +154,14 @@ export async function getUserOpenId() {
     return res.result;
 }
 
+export function getNodeRect(selector) {
+    return new Promise((resolve) => {
+        wx.createSelectorQuery().select(selector).boundingClientRect(function(rect) {
+            resolve(rect)
+        }).exec()
+    })
+}
+
 export default {
     formatNumber,
     formatTime
