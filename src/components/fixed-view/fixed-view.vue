@@ -13,9 +13,9 @@
     export default {
         methods: {
             backHome(e) {
-                wx.redirectTo({
-                    url: '/pages/index/main'
-                });
+                wx.navigateBack({
+                    delta: 1
+                })
             }
         }
     }

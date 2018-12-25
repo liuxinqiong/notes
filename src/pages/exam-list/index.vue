@@ -1,160 +1,210 @@
 <template>
-    <div class='exam-container'>
-        <img class='pic-background' src='../../assets/img/background.png'>
-        <div class='top-bar'>
+    <div class="exam-container">
+        <img class="pic-background" src="../../assets/img/background.png">
+        <div class="top-bar">
             <back-btn></back-btn>
             <div>
-                <span class='add-text'>添加</span>
-                <img class='circle-btn add-btn' @click='addExam' src='./img/add.png'>
+                <span class="add-text">添加</span>
+                <img class="circle-btn add-btn" @click="addExam" src="./img/add.png">
             </div>
             <div>
-                <span class='edit-text'>编辑</span>
-                <img class='circle-btn edit-btn' @click='editExam' src='./img/edit.png'>
+                <span class="edit-text">编辑</span>
+                <img class="circle-btn edit-btn" @click="editExam" src="./img/edit.png">
             </div>
         </div>
-
-        <div class='exam-list'>
-            <div class='real-content'>
-                <div class='exam-wrapper'>
-                    <exam-item ref='examItem' v-for='(exam,index) in examList' @click="itemClick($event,exam)" :exam='exam'
-                        :isEidt='isEidt' :key='index'></exam-item>
+        <div class="exam-list">
+            <div class="real-content">
+                <div class="exam-wrapper">
+                    <exam-item ref="examItem" v-for="(exam, index) in examList" :item-width='itemWidth' @click="itemClick($event,exam)"
+                        :exam="exam" :is-eidt="isEidt" :key="index"></exam-item>
                 </div>
             </div>
-
-
         </div>
-        <div class='buttom-bar'>
+        <div class="buttom-bar">
             <div>
-                <img v-if='isEidt' class='oval-btn delete-btn' @click='deleteExam' src='./img/delete.png'>
+                <img v-if="isEidt" class="oval-btn delete-btn" @click="deleteExam" src="./img/delete.png">
             </div>
             <div>
-                <img v-if='isEidt' class='oval-btn cancel-btn' @click='editCancel' src='./img/cancel.png'>
+                <img v-if="isEidt" class="oval-btn cancel-btn" @click="editCancel" src="./img/cancel.png">
             </div>
         </div>
     </div>
 </template>
 <script>
-    import BackBtn from '@/components/back-btn/back-btn';
-    import ExamItem from '@/components/exam-item/exam-item';
+    import BackBtn from "@/components/back-btn/back-btn";
+    import ExamItem from "@/components/exam-item/exam-item";
     import {
         showModal,
         arrayRemove,
-        getUserOpenId
-    } from '@/utils';
+        getUserOpenId,
+        takePhoto
+    } from "@/utils";
     import {
-        doTest
-    } from '@/utils/wxDB';
+        getTotalStar,
+        addTotalStar,
+        deleteExamById,
+        insertExamData,
+        updateTestOrReciteExam,
+        loadExamsOrder,
+        insertTestRecord,
+        finishTestRecord,
+        insertAnswerRecord
+    } from "@/utils/wxDB";
+    import {
+        uploadExamImg,
+        getTempFileUrl,
+        downloadFile,
+        deleteFile
+    } from "@/utils/wxFile";
     export default {
         data() {
             return {
                 isEidt: false,
+                pageNum: 1,
+                pageSize: 10,
+                orderCol: 'last_answer_time',
+                itemWidth: 294,
                 deleteList: [], //需要删除的列表
-                examList: [{
-                    id: 1,
-                    imgSrc: 'https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg',
-                    examTime: '2018.10.12 10.26',
-                    width: 278,
-                    height: 230,
-                    isEidt: false
-                }, {
-                    id: 2,
-                    imgSrc: 'https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg',
-                    examTime: '2018.10.12 10.26',
-                    width: 278,
-                    height: 380,
-                    isEidt: true
-                }, {
-                    id: 3,
-                    imgSrc: 'https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg',
-                    examTime: '2018.10.12 10.26',
-                    width: 278,
-                    height: 210,
-                    isEidt: true
-                }, {
-                    id: 4,
-                    imgSrc: 'https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg',
-                    examTime: '2018.10.12 10.26',
-                    width: 278,
-                    height: 270,
-                    isEidt: true
-                }, {
-                    id: 5,
-                    imgSrc: 'https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg',
-                    examTime: '2018.10.12 10.26',
-                    width: 278,
-                    height: 340,
-                    isEidt: false
-                }, {
-                    id: 6,
-                    imgSrc: 'https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg',
-                    examTime: '2018.10.12 10.26',
-                    width: 278,
-                    height: 350,
-                    isEidt: true
-                }, {
-                    id: 7,
-                    imgSrc: 'https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg',
-                    examTime: '2018.10.12 10.26',
-                    width: 278,
-                    height: 300,
-                    isEidt: true
-                }, {
-                    id: 8,
-                    imgSrc: 'https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg',
-                    examTime: '2018.10.12 10.26',
-                    width: 278,
-                    height: 330,
-                    isEidt: true
-                }]
+                leftListHeight: 0,
+                rightListHeight: 0,
+                examOtherHeight: 75,
+                clomunSegIndex: 0,
+                leftList: [],
+                rightList: [],
+                examList: []
             };
         },
         created() {
-            //loadData 加载数据
+            console.log("created");
+        },
+        onShow() {
+            var getList = [{
+                    id: 0,
+                    imgSrc: "https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg",
+                    examTime: "2018.10.12 10.21",
+                    height: 93
+                },
+                {
+                    id: 1,
+                    imgSrc: "https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg",
+                    examTime: "2018.10.12 10.22",
+                    height: 93
+                },
+                {
+                    id: 2,
+                    imgSrc: "https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg",
+                    examTime: "2018.10.12 10.23",
+                    height: 93
+                },
+                {
+                    id: 3,
+                    imgSrc: "https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg",
+                    examTime: "2018.10.12 10.24",
+                    height: 93
+                },
+                {
+                    id: 4,
+                    imgSrc: "https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg",
+                    examTime: "2018.10.12 10.25",
+                    height: 93
+                },
+                {
+                    id: 5,
+                    imgSrc: "cloud://fly-test-0e5941.666c-fly-test-0e5941/exam_img/1545542578132340577.jpg",
+                    examTime: "2018.10.12 10.26",
+                    height: 240
+                },
+                {
+                    id: 6,
+                    imgSrc: "https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg",
+                    examTime: "2018.10.12 10.27",
+                    height: 93
+                },
+                {
+                    id: 7,
+                    imgSrc: "https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg",
+                    examTime: "2018.10.12 10.28",
+                    height: 93
+                },
+                {
+                    id: 8,
+                    imgSrc: "https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg",
+                    examTime: "2018.10.12 10.29",
+                    height: 93
+                }
+            ];
+
+            //var getList = this.loadData() 加载数据
+            this.sortResponseList(getList);
+
         },
         methods: {
-            doTest: function () {
-                doTest();
-            },
-            loadData: function () { //加载数据
+            loadData() {
+                //加载数据
                 //从云数据库获取数据
+                return loadExamsOrder(this.pageNum, this.pageSize, this.orderCol);
             },
-            goBack: function () {
-                //返回首页
+            sortResponseList(getList) {
+                for (let index = 0; index < getList.length; index++) {
+                    const element = getList[index];
+                    console.log(this.leftListHeight);
+                    console.log(this.rightListHeight);
+                    console.log(this.leftListHeight > this.rightListHeight + 80);
+                    if (this.leftListHeight > this.rightListHeight + 80) {
+                        //+80 防止因为左边高一点点 就换到右边
+                        this.examList.push(element);
+                        this.rightListHeight =
+                            this.examOtherHeight + element.height + this.rightListHeight;
+                    } else {
+                        this.examList.splice(this.clomunSegIndex, 0, element);
+                        this.clomunSegIndex += 1;
+                        this.leftListHeight =
+                            this.examOtherHeight + element.height + this.leftListHeight;
+                    }
+                }
             },
-            addExam: function () {
-                const url = "../add-exam/main"; //跳转到题目增加页面
+            async addExam() {
+                const tempFilePath = await takePhoto();
                 wx.navigateTo({
-                    url
+                    url: `/pages/cropper/main?src=${tempFilePath}`
                 });
             },
-            editExam: async function () {
-                this.isEidt = this.isEidt ? false : true;
-                console.log(await getUserOpenId());
+            async editExam() {
+                this.isEidt = !this.isEidt;
+                //const tempFilePath = await takePhoto();
+                //console.log("tempFilePath" + tempFilePath);
+                console.log(
+                    await downloadFile(
+                        "cloud://fly-test-0e5941.666c-fly-test-0e5941/exam_img/1545542578132340577.jpg"
+                    )
+                );
             },
-            deleteExam: function () {
+            deleteExam() {
                 if (this.deleteList.length <= 0) {
-                    showModal('提示', '请选择要删除的题目');
+                    showModal("提示", "请选择要删除的题目");
                 } else {
                     //去云数据库删除
                     for (let index = 0; index < this.deleteList.length; index++) {
                         const element = this.deleteList[index];
                         console.log(element);
                         arrayRemove(this.examList, function (n) {
-
                             return n.id === element.id;
                         });
                     }
                     this.isEidt = false;
                     //  this.examList = [];
                 }
-
             },
-            editCancel: function () {
+            editCancel() {
                 this.isEidt = false;
             },
-            itemClick: function (checked, exam) {
-                if (!this.isEidt)
+            itemClick(checked, exam) {
+                if (!this.isEidt) {
+                    wx.navigateTo({
+                        url: `/pages/exam/main?sort=time`
+                    });
                     return; //非编辑状态事件无效
+                }
                 if (checked) {
                     this.deleteList.push(exam);
                 } else {
@@ -167,7 +217,8 @@
         },
         watch: {
             isEidt(newValue, oldValue) {
-                if (!newValue) { //取消编辑的时候 清空要删除的数据
+                if (!newValue) {
+                    //取消编辑的时候 清空要删除的数据
                     this.deleteList = [];
                 }
             }
@@ -244,7 +295,6 @@
         }
 
         .exam-list {
-            width: 682rpx;
             background: #88c87d;
             border: 4rpx solid #fffded;
             border-radius: 34rpx;
@@ -253,40 +303,23 @@
             top: 140rpx;
             right: 34rpx;
             bottom: 60rpx;
-            overflow: scroll;
-            //padding: 50rpx 44rpx 40rpx 48rpx;
-            //padding-top: 50rpx;
-            //padding-bottom: 40rpx;
-            //padding-left: 48rpx;
-
+            overflow: auto;
 
             .real-content {
-                width: 682rpx;
                 position: absolute;
                 top: 50rpx;
                 bottom: 40rpx;
-                overflow: scroll;
-
+                left: 42rpx;
+                //right: 45rpx;
+                overflow: auto;
             }
 
             .exam-wrapper {
-                width: 590rpx;
                 column-count: 2;
-                -moz-column-count: 2;
-                /* Firefox */
-                -webkit-column-count: 2;
-                //@debugmargin-top: 50rpx;
-                margin-left: 48rpx;
                 //margin-bottom: 40rpx;
-
-                /* Safari 和 Chrome */
-                //-moz-column-gap: -5rpx;
-                /* Firefox */
-                //-webkit-column-gap: -5rpx;
-                /* Safari and Chrome */
-                //column-gap: -5rpx;
+                column-gap: 18rpx;
+                //float: left;
             }
-
         }
 
         .buttom-bar {

@@ -7,9 +7,9 @@
         methods: {
             goBack: function () {
                 const url = "../index/main";
-                wx.navigateTo({
-                    url
-                });
+                wx.navigateBack({
+                    delta: 1
+                })
             }
         }
     }
