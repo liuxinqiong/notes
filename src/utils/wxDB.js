@@ -29,7 +29,7 @@ export async function loadExamsOrder(page, size, order) {
 
 /**
  * 插入题目
- * @param {Object} examData(original_img_id	原图片存储id | eidted_img_id 编辑过后的图片存储id | is_paint 是否涂抹过 | img_width	图片宽度 | img_height	图片高度)
+ * @param {Object} examData(original_img_id	原图片存储id | edited_img_id 编辑过后的图片存储id | is_paint 是否涂抹过 | img_width	图片宽度 | img_height	图片高度)
  * @returns {string}  题目ID
  *
  */
