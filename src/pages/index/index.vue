@@ -54,12 +54,8 @@
 </script>
 <style lang="scss" scoped>
     .container {
-        position: absolute;
-        top: 0;
-        bottom: -200rpx;
-        left: 0;
-        right: 0;
-        overflow: auto;
+        position: relative;
+        min-height: 100%;
         .bg {
             position: absolute;
             width: 100%;
@@ -167,7 +163,6 @@
             }
         }
         .bottom {
-            margin-top: 75rpx;
             height: 68rpx;
             padding: 75rpx 90rpx 52rpx;
             .add-exam {
