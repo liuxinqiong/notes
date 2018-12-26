@@ -154,6 +154,17 @@ export async function getUserOpenId() {
     return res.result;
 }
 
+export async function test() {
+    var task = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(1)
+        }, 1000)
+    })
+    var res = await task()
+    console.log(res)
+    return res
+}
+
 export function getNodeRect(selector) {
     return new Promise((resolve) => {
         wx.createSelectorQuery().select(selector).boundingClientRect(function(rect) {

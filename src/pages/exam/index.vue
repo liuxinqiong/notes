@@ -5,7 +5,7 @@
                 <div class="scroll">
                     <div class="img-wrapper">
                         <img src="https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg"
-                            mode="aspectFit" alt="">
+                            mode="widthFix" alt="">
                         <p class="time">2018.9.16 13:25</p>
                     </div>
                     <div class="buttons">
