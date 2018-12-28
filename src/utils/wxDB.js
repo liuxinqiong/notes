@@ -85,10 +85,9 @@ export async function deleteExamCallCloudByIds(ids) {
                 ids: ids
             }
         });
-        console.log(res);
         return res.result.stats.removed;
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
     return 0;
 }

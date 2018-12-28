@@ -80,7 +80,6 @@
         },
         methods: {
             async lower(e) {
-                console.log(e);
                 await this.getNextPageData();
             },
             upper(e) {
@@ -100,8 +99,6 @@
                 this.nextData = true;
                 this.isLock = false;
                 var getList = await this.loadData(); //加载数据
-
-                console.log(getList);
                 this.sortResponseList(getList);
                 hideLoading();
             },
@@ -131,7 +128,6 @@
                     this.pageSize,
                     this.orderCol
                 );
-                console.log(getList);
                 if (getList.length < this.pageSize) {
                     this.nextData = false; //没有更多数据了
                 }
