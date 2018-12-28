@@ -2,7 +2,7 @@
     <fixed-view>
         <div class="add-exam">
             <div class="img-wrapper">
-                <canvas canvas-id="addExam" id="canvas" :style="{ height: canvasHeight + 'px', backgroundImage: 'url(' + src + ')', backgroundSize: '100%, 100%'}" disable-scroll="true"
+                <canvas canvas-id="addExam" id="canvas" :style="{height: canvasHeight + 'px'}" disable-scroll="true"
                     @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend"></canvas>
             </div>
             <div class="buttons">
@@ -15,19 +15,21 @@
 </template>
 <script>
     import fixedView from '@/components/fixed-view/fixed-view'
+    import { uploadExamImg } from '@/utils/wxFile'
+    import { insertExamData } from '@/utils/wxDB'
     import {
         getImageInfo,
         getNodeRect,
-        test
+        showLoading,
+        hideLoading,
+        showSuccess,
+        showFail
     } from '@/utils'
     const canvasId = 'addExam'
     export default {
         data() {
             return {
-                src: '',
-                context: null,
-                canvasHeight: 150,
-                tempPath: ''
+                canvasHeight: 150
             }
         },
         components: {
@@ -35,89 +37,110 @@
         },
         methods: {
             back() {
-                const length = this.imgStack.length
-                if(length === 1) {
-                    return
+                this.backEnable = false
+                this.executeActions.pop()
+                // 执行状态为空，则认定为未涂抹
+                if(this.executeActions.length === 0) {
+                    this.is_paint = false
                 }
-                this.imgStack.pop() // 当初当前显示的
-                const data = this.imgStack[length - 2];
-                this._useShot(data)
+                this._drawImage(false)
+                this.executeActions.forEach(steps => {
+                    steps.forEach(action => {
+                        this.context.arc(...action)
+                    })
+                });
+                this.context.setFillStyle('#fff')
+                this.context.fill()
+                this.context.draw(false, () => {
+                    this.backEnable = true
+                })
             },
             repaint() {
-                this.imgStack.length = 1
-                const data = this.imgStack[0]
-                this._useShot(data)
-            },
-            test() {
-                // android 只适用于 fill 填充块合成，用于stroke的线段合成效果都是默认 source-over
-                this.context.globalCompositeOperation = 'destination-out'
+                // 重画认定为未涂抹
+                this.is_paint = false
+                this._drawImage(true)
             },
             async save() {
-                // 生成图片
-                // wx.canvasToTempFilePath({
-                //     x: 0,
-                //     y: 0,
-                //     width: this.imgInfo.width,
-                //     height: this.imgInfo.height,
-                //     quality: 1,
-                //     canvasId: canvasId,
-                //     success: res => {
-                //         this.tempPath = res.tempFilePath
-                //     }
-                // });
-                debugger
-                var aaa = await test()
-                console.log(aaa)
-                console.log(123)
+                showLoading('正在保存')
+                if(this.is_paint) {
+                    // 生成图片
+                    wx.canvasToTempFilePath({
+                        x: 0,
+                        y: 0,
+                        width: this.imgInfo.width,
+                        height: this.imgInfo.height,
+                        quality: 1,
+                        canvasId: canvasId,
+                        success: async res => {
+                            try {
+                                var [original_img_id, edited_img_id] = await Promise.all([uploadExamImg(this.src), uploadExamImg(res.tempFilePath)])
+                                this.addExam(original_img_id, edited_img_id)
+                            } catch(e) {
+                                hideLoading()
+                                showFail('保存失败')
+                            }
+                        },
+                        fail: (e) => {
+                            console.log(e)
+                        }
+                    });
+                } else {
+                    const imgId = await uploadExamImg(this.src)
+                    this.addExam(imgId, imgId)
+                }
+            },
+            async addExam(original_img_id, edited_img_id) {
+                try {
+                    var res_id = await insertExamData({
+                        original_img_id,
+                        edited_img_id,
+                        is_paint: this.is_paint,
+                        img_width: this.imgInfo.width,
+                        img_height: this.imgInfo.height
+                    })
+                    showSuccess('保存成功')
+                    setTimeout(() => {
+                        wx.reLaunch({
+                            url: `/pages/index/main`
+                        });
+                    }, 1500)
+                } catch(e) {
+                    hideLoading()
+                    showFail('保存失败')
+                }
             },
             async init() {
-                const data = await Promise.all([getImageInfo(this.src), getNodeRect('#canvas')])
-                const [imageInfo, canvasInfo] = data
-                const radio = imageInfo.width / imageInfo.height
-                this.canvasHeight = canvasInfo.width / radio
-                this.imgInfo = {
-                    width: canvasInfo.width,
-                    height: this.canvasHeight
+                try {
+                    const data = await Promise.all([getImageInfo(this.src), getNodeRect('#canvas')])
+                    const [imageInfo, canvasInfo] = data
+                    const radio = imageInfo.width / imageInfo.height
+                    this.canvasHeight = canvasInfo.width / radio
+                    this.imgInfo = {
+                        width: canvasInfo.width,
+                        height: this.canvasHeight
+                    }
+                    this._drawImage(true)
+                } catch(e) {
+                    console.log(e)
                 }
-                this.context.drawImage(this.src, 0, 0, canvasInfo.width, this.canvasHeight)
-                this.context.draw(false, this._addShot)
             },
             touchstart(e) {
                 this.context.setFillStyle('#fff')
                 this.context.beginPath()
+                this.stepActions = []
                 this._draw(e)
             },
             touchmove(e) {
                 this._draw(e)
             },
             touchend(e) {
-                // 保存快照
-                this._addShot()
+                this.is_paint = true
+                // 保存本次执行的所有动作
+                this.executeActions.push(this.stepActions)
             },
-            _addShot() {
-                wx.canvasGetImageData({
-                    canvasId: canvasId,
-                    x: 0,
-                    y: 0,
-                    width: this.imgInfo.width,
-                    height: this.canvasHeight,
-                    success: (res) => {
-                        this.imgStack.push(res.data)
-                    }
-                })
-            },
-            _useShot(data) {
-                wx.canvasPutImageData({
-                    canvasId: canvasId,
-                    x: 0,
-                    y: 0,
-                    width: this.imgInfo.width,
-                    height: this.imgInfo.height,
-                    data,
-                    success: (res) => {
-                        console.log(res)
-                    }
-                })
+            _drawImage(immediate) {
+                this.context.drawImage(this.src, 0, 0, this.imgInfo.width, this.imgInfo.height)
+                immediate && this.context.draw(false)
             },
             _draw(e) {
                 // 先存储在touch属性中，日后看能否进一步优化
@@ -125,20 +148,28 @@
                     startX: e.touches[0].x,
                     startY: e.touches[0].y
                 }
+                this.stepActions.push([this.touch.startX, this.touch.startY, 10, 0, Math.PI * 2])
                 this.context.arc(this.touch.startX, this.touch.startY, 10, 0, Math.PI * 2)
                 this.context.fill()
                 this.context.draw(true)
             }
         },
-        mounted() {
+        onShow() {
             this.src = this.$root.$mp.query.src
             this.context = wx.createCanvasContext(canvasId)
+            this.touch = {} // 触碰点位置
+            this.imgInfo = {} // 图片信息
+            this.is_paint = false // 是否涂抹
+            this.executeActions = [] // 总操作状态
+            this.stepActions = [] // 每步操作状态
+            this.backEnable = true
             this.init()
         },
+        mounted() {
+            console.log('mounted')
+        },
         created() {
-            this.touch = {} // 触碰点位置
-            this.imgStack = [] // 历史栈
-            this.imgInfo = {} // 图片信息
+            console.log('created')
         }
     }
 </script>
