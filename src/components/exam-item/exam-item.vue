@@ -1,6 +1,6 @@
 <template>
     <div class="exam-item" @click="doCheck" :style="{width:itemWidth+'rpx'}">
-        <img class="exam-img" mode="widthFix" :src="exam.imgSrc" onerror="this.src='./img/checked.png';this.onerror=null">
+        <img class="exam-img" mode="widthFix" :src="exam.imgSrc" @error="doError">
         <span class="exam-time">{{exam.examTime}}</span>
         <div class="exam-check" v-if="isEidt">
             <img class="exam-checked" src="./img/checked.png" v-if="checked">
@@ -9,6 +9,7 @@
     </div>
 </template>
 <script>
+    require('../../assets/img/code.jpg');
     export default {
         data() {
             return {
@@ -20,6 +21,9 @@
             doCheck() {
                 this.checked = this.checked ? false : this.isEidt;
                 this.$emit("click", this.checked);
+            },
+            doError() {
+                this.exam.imgSrc = '../../assets/img/code.jpg';
             }
         },
         watch: {
