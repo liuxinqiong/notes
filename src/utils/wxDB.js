@@ -70,6 +70,30 @@ export async function loadAllExamsOrderByAnswerTime() {
 }
 
 /**
+ * 调用云函数批量删除题目
+ * @param {array<String>} ids
+ */
+export async function deleteExamCallCloudByIds(ids) {
+    if (ids == null || ids.length == 0) {
+        return 0;
+    }
+    try {
+        const res = await wx.cloud.callFunction({
+            // 要调用的云函数名称
+            name: 'deleteExamByIds',
+            data: {
+                ids: ids
+            }
+        });
+        console.log(res);
+        return res.result.stats.removed;
+    } catch (error) {
+        console.log(error);
+    }
+    return 0;
+}
+
+/**
  * 从某题开始按答题顺序获取所有题目  [顺序答题]
  * @param {String} examId 当前开始答题的ID
  */
