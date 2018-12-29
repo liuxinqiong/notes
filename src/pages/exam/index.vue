@@ -2,11 +2,12 @@
     <div>
         <fixed-view>
             <div class="exam">
+                <div class="tip" v-if="currentMode !== 'normal'">当前处于{{currentMode === 'eraser' ? '橡皮擦' : '涂抹'}}模式</div>
                 <div class="scroll">
                     <div class="img-wrapper">
-                        <img src="https://gss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=e7a483cccb3d70cf4cafa20bc8ecfd38/00e93901213fb80ee376b02234d12f2eb83894a4.jpg"
-                            mode="widthFix" alt="">
-                        <p class="time">2018.9.16 13:25</p>
+                        <canvas canvas-id="exam" id="exam" :style="{height: canvasHeight + 'px'}" disable-scroll="true"
+                            @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend"></canvas>
+                        <p class="time">{{current.last_answer_time}}</p>
                     </div>
                     <div class="buttons">
                         <button class="scrawl" @click="scrawl"></button>
@@ -49,6 +50,15 @@
     import fixedView from '@/components/fixed-view/fixed-view'
     import layer from '@/components/layer/layer'
     import star from '@/components/star/star'
+    import { loadExamsOrderByAnswerTimeFromOne, updateEditedImg } from '@/utils/wxDB'
+    import { createCanvasWrapper } from '@/utils/canvasWrapper'
+    import { downloadFile, getTempFileUrl, deleteFile, uploadExamImg } from '@/utils/wxFile'
+    import {
+        showLoading,
+        hideLoading,
+        showSuccess,
+        showToast
+    } from '@/utils'
     const MODE = {
         STUDY: 0,
         EXAM: 1
@@ -56,7 +66,11 @@
     export default {
         data() {
             return {
-                mode: MODE.STUDY
+                mode: MODE.STUDY,
+                canvasHeight: 150,
+                list: [],
+                current: {},
+                currentMode: 'normal'
             }
         },
         components: {
@@ -66,38 +80,115 @@
         },
         methods: {
             scrawl() {
-
+                this.currentMode = this.currentMode === 'scrawl' ? 'normal' : 'scrawl'
             },
             eraser() {
-
+                this.currentMode = this.currentMode === 'eraser' ? 'normal' : 'eraser'
             },
             clear() {
-
+                this.canvasWrapper.repaint()
             },
-            save() {
-
+            async save() {
+                const isPaint = this.canvasWrapper.isPaint()
+                if(!isPaint) {
+                    showToast('没有修改，无需保存')
+                    return
+                }
+                showLoading('保存中')
+                const path = await this.canvasWrapper.saveToTempFilePath()
+                const newId = await uploadExamImg(path)
+                const res = await updateEditedImg(this.current._id, newId)
+                if(res) {
+                    showSuccess('保存成功')
+                    // 有可能共享数据
+                    if(this.current.edited_img_id !== this.current.original_img_id) {
+                        await deleteFile([this.current.edited_img_id])
+                        console.log('旧图片清理成功')
+                    }
+                } else {
+                    showToast('保存失败')
+                }
+            },
+            touchstart(e) {
+                this._draw(e)
+            },
+            touchmove(e) {
+                this._draw(e)
+            },
+            touchend(e) {
+                this.canvasWrapper.finishOneStep()
+            },
+            _draw(e) {
+                if(this.currentMode === 'scrawl') {
+                    this.canvasWrapper.scrawl(e.touches[0].x, e.touches[0].y)
+                } else if(this.currentMode === 'eraser') {
+                    this.canvasWrapper.eraser(e.touches[0].x, e.touches[0].y)
+                }
+            },
+            prev() {
+                if(this.index > 0 && this.index < this.list.length) {
+                    this.loadItem(--this.index)
+                }
+            },
+            next() {
+                if(this.index >= 0 && this.index < this.list.length - 1) {
+                    this.loadItem(++this.index)
+                }
             },
             errorHandler(e) {
-                this.$refs.share.show()
+                // this.$refs.share.show()
+                this.prev()
             },
             rightHandler() {
-
+                this.next()
             },
             prevHandler() {
-                console.log('right clicked')
+                this.prev()
             },
             nextHandle() {
-
+                this.next()
             },
             closeShare() {
                 this.$refs.share.hide()
             },
             saveLocal() {
 
+            },
+            async loadItem(index) {
+                showLoading('加载题目中')
+                const [original_img_src, edited_img_src] = await Promise.all([downloadFile(this.list[index].original_img_id), downloadFile(this.list[index].edited_img_id)])
+                this.current = {
+                    ...this.list[index],
+                    original_img_src,
+                    edited_img_src,
+                    last_answer_time: this.list[index].last_answer_time.format('yyyy.MM.dd hh:mm')
+                }
+                console.log(this.current._id)
+                this.canvasWrapper = await createCanvasWrapper(edited_img_src, 'exam', original_img_src)
+                this.canvasHeight = this.canvasWrapper.height
+                this.canvasWrapper.drawImage(true)
+                hideLoading()
+            },
+            async loadListById() {
+                showLoading('加载题库中')
+                try {
+                    this.list = await loadExamsOrderByAnswerTimeFromOne(this.fromId)
+                    if(this.list.length > 0) {
+                        this.index = 0
+                        this.loadItem(0)
+                    }
+                } catch(e) {
+                    console.log(e)
+                }
             }
         },
         mounted() {
            this.mode = +this.$root.$mp.query.mode
+           this.fromId = this.$root.$mp.query._id
+           this.sort = this.$root.$mp.query.sort
+           if(this.fromId) {
+               this.loadListById()
+           }
         }
     }
 
@@ -109,7 +200,6 @@
         position: relative;
 
         .scroll {
-            overflow: auto;
             position: absolute;
             top: 52rpx;
             bottom: 200rpx;
@@ -117,11 +207,25 @@
             right: 18rpx;
         }
 
+        .tip {
+            background-color: #02BB00;
+            position: absolute;
+            width: 100%;
+            line-height: 50rpx;
+            color: #fff;
+            font-size: 24rpx;
+            text-align: center;
+            top: 0;
+            left: 0;
+        }
+
         .img-wrapper {
             img {
                 width: 100%;
             }
-
+            canvas {
+                width: 100%;
+            }
             .time {
                 color: #FFF;
                 font-size: 20rpx;

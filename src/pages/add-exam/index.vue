@@ -1,8 +1,9 @@
 <template>
     <fixed-view>
         <div class="add-exam">
+            <div class="tip" v-if="isClear">当前处于橡皮擦模式</div>
             <div class="img-wrapper">
-                <canvas canvas-id="addExam" id="canvas" :style="{height: canvasHeight + 'px'}" disable-scroll="true"
+                <canvas canvas-id="addExam" id="addExam" :style="{height: canvasHeight + 'px'}" disable-scroll="true"
                     @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend"></canvas>
             </div>
             <div class="buttons">
@@ -17,19 +18,19 @@
     import fixedView from '@/components/fixed-view/fixed-view'
     import { uploadExamImg } from '@/utils/wxFile'
     import { insertExamData } from '@/utils/wxDB'
+    import { createCanvasWrapper } from '@/utils/canvasWrapper'
     import {
-        getImageInfo,
-        getNodeRect,
         showLoading,
         hideLoading,
         showSuccess,
-        showFail
+        showToast
     } from '@/utils'
     const canvasId = 'addExam'
     export default {
         data() {
             return {
-                canvasHeight: 150
+                canvasHeight: 150,
+                isClear: false
             }
         },
         components: {
@@ -37,66 +38,33 @@
         },
         methods: {
             back() {
-                this.backEnable = false
-                this.executeActions.pop()
-                // 执行状态为空，则认定为未涂抹
-                if(this.executeActions.length === 0) {
-                    this.is_paint = false
-                }
-                this._drawImage(false)
-                this.executeActions.forEach(steps => {
-                    steps.forEach(action => {
-                        this.context.arc(...action)
-                    })
-                });
-                this.context.setFillStyle('#fff')
-                this.context.fill()
-                this.context.draw(false, () => {
-                    this.backEnable = true
-                })
+                this.canvasWrapper.revoke()
             },
             repaint() {
-                // 重画认定为未涂抹
-                this.is_paint = false
-                this._drawImage(true)
+                this.canvasWrapper.repaint()
+            },
+            eraser(e) {
+                this.isClear = !this.isClear
             },
             async save() {
                 showLoading('正在保存')
-                if(this.is_paint) {
-                    // 生成图片
-                    wx.canvasToTempFilePath({
-                        x: 0,
-                        y: 0,
-                        width: this.imgInfo.width,
-                        height: this.imgInfo.height,
-                        quality: 1,
-                        canvasId: canvasId,
-                        success: async res => {
-                            try {
-                                var [original_img_id, edited_img_id] = await Promise.all([uploadExamImg(this.src), uploadExamImg(res.tempFilePath)])
-                                this.addExam(original_img_id, edited_img_id)
-                            } catch(e) {
-                                hideLoading()
-                                showFail('保存失败')
-                            }
-                        },
-                        fail: (e) => {
-                            console.log(e)
-                        }
-                    });
-                } else {
-                    const imgId = await uploadExamImg(this.src)
-                    this.addExam(imgId, imgId)
-                }
-            },
-            async addExam(original_img_id, edited_img_id) {
+                const isPaint = this.canvasWrapper.isPaint()
+                let original_img_id, edited_img_id
                 try {
+                    if(isPaint) {
+                        const path = await this.canvasWrapper.saveToTempFilePath()
+                        const result = await Promise.all([uploadExamImg(this.canvasWrapper.imageSrc), uploadExamImg(path)])
+                        original_img_id = result[0]
+                        edited_img_id = result[1]
+                    } else {
+                        original_img_id = edited_img_id = await uploadExamImg(this.src)
+                    }
                     var res_id = await insertExamData({
                         original_img_id,
                         edited_img_id,
-                        is_paint: this.is_paint,
-                        img_width: this.imgInfo.width,
-                        img_height: this.imgInfo.height
+                        is_paint: this.canvasWrapper.isPaint(),
+                        img_width: this.canvasWrapper.width,
+                        img_height: this.canvasWrapper.height
                     })
                     showSuccess('保存成功')
                     setTimeout(() => {
@@ -105,64 +73,30 @@
                         });
                     }, 1500)
                 } catch(e) {
-                    hideLoading()
-                    showFail('保存失败')
+                    showToast('保存失败')
                 }
             },
             async init() {
-                try {
-                    const data = await Promise.all([getImageInfo(this.src), getNodeRect('#canvas')])
-                    const [imageInfo, canvasInfo] = data
-                    const radio = imageInfo.width / imageInfo.height
-                    this.canvasHeight = canvasInfo.width / radio
-                    this.imgInfo = {
-                        width: canvasInfo.width,
-                        height: this.canvasHeight
-                    }
-                    this._drawImage(true)
-                } catch(e) {
-                    console.log(e)
-                }
+                this.canvasWrapper = await createCanvasWrapper(this.src, canvasId)
+                this.canvasHeight = this.canvasWrapper.height
+                this.canvasWrapper.drawImage(true)
             },
             touchstart(e) {
-                this.context.setFillStyle('#fff')
-                this.context.beginPath()
-                this.stepActions = []
                 this._draw(e)
             },
             touchmove(e) {
                 this._draw(e)
             },
             touchend(e) {
-                this.is_paint = true
-                // 保存本次执行的所有动作
-                this.executeActions.push(this.stepActions)
-            },
-            _drawImage(immediate) {
-                this.context.drawImage(this.src, 0, 0, this.imgInfo.width, this.imgInfo.height)
-                immediate && this.context.draw(false)
+                this.canvasWrapper.finishOneStep()
             },
             _draw(e) {
-                // 先存储在touch属性中，日后看能否进一步优化
-                this.touch = {
-                    startX: e.touches[0].x,
-                    startY: e.touches[0].y
-                }
-                this.stepActions.push([this.touch.startX, this.touch.startY, 10, 0, Math.PI * 2])
-                this.context.arc(this.touch.startX, this.touch.startY, 10, 0, Math.PI * 2)
-                this.context.fill()
-                this.context.draw(true)
+                this.isClear ? this.canvasWrapper.eraser(e.touches[0].x, e.touches[0].y) : this.canvasWrapper.scrawl(e.touches[0].x, e.touches[0].y)
             }
         },
         onShow() {
             this.src = this.$root.$mp.query.src
-            this.context = wx.createCanvasContext(canvasId)
-            this.touch = {} // 触碰点位置
-            this.imgInfo = {} // 图片信息
-            this.is_paint = false // 是否涂抹
-            this.executeActions = [] // 总操作状态
-            this.stepActions = [] // 每步操作状态
-            this.backEnable = true
+            this.isClear = false
             this.init()
         },
         mounted() {
@@ -179,6 +113,18 @@
         overflow: hidden;
         height: 100%;
         box-sizing: border-box;
+        position: relative;
+        .tip {
+            background-color: #02BB00;
+            position: absolute;
+            width: 100%;
+            line-height: 50rpx;
+            color: #fff;
+            font-size: 24rpx;
+            text-align: center;
+            top: 0;
+            left: 0;
+        }
         .img-wrapper {
             position: relative;
             canvas {
