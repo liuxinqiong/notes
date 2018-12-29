@@ -4,11 +4,9 @@
         <div class='top-bar'>
             <back-btn></back-btn>
             <div>
-                <span class='add-text'>添加</span>
                 <img class='circle-btn add-btn' @click='addExam' src='./img/add.png'>
             </div>
             <div>
-                <span class='edit-text'>编辑</span>
                 <img class='circle-btn edit-btn' @click='editExam' src='./img/edit.png'>
             </div>
         </div>
@@ -100,7 +98,10 @@
                 this.isLock = false;
                 var getList = await this.loadData(); //加载数据
                 this.sortResponseList(getList);
-                hideLoading();
+                this.$nextTick(function () {
+                    hideLoading();
+                });
+
             },
             async getNextPageData() {
                 if (this.isLock) //防止重复加载
@@ -117,8 +118,10 @@
                 showLoading('数据加载中...');
                 var getList = await this.loadData(); //加载数据
                 this.sortResponseList(getList);
-                hideLoading();
-                this.isLock = false;
+                this.$nextTick(function () {
+                    hideLoading();
+                    this.isLock = false;
+                });
             },
             async loadData() {
                 //加载数据
@@ -239,7 +242,7 @@
 </script>
 <style lang='scss' scoped>
     .circle-btn {
-        width: 83rpx;
+        width: 153rpx;
         height: 83rpx;
         position: absolute;
     }
@@ -269,12 +272,12 @@
             width: 100%;
 
             .add-btn {
-                left: 463rpx;
+                left: 393rpx;
                 top: 36rpx;
             }
 
             .edit-btn {
-                left: 632rpx;
+                left: 564rpx;
                 top: 36rpx;
             }
 
