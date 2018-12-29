@@ -63,7 +63,7 @@ export function showSuccess(text) {
     })
 }
 
-export function showFail(text) {
+export function showToast(text) {
     wx.showToast({
         title: text,
         icon: 'none'
@@ -118,7 +118,6 @@ export function takePhoto() {
     })
 }
 
-
 export function arrayRemove(array, func) {
     for (let index = 0; index < array.length; index++) {
         if (func(array[index])) {
@@ -149,7 +148,7 @@ export async function getUserOpenId() {
         // 要调用的云函数名称
         name: 'wxContext',
     }).catch(err => {
-        showFail('获取用户信息失败');
+        showToast('获取用户信息失败');
     })
     return res.result;
 }

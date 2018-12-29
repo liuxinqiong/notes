@@ -14,7 +14,7 @@
         </div>
         <div class='exam-list'>
             <div class='real-content'>
-                <scroll-view scroll-y class='scroll-wrapper' @scrolltoupper="upper" @scrolltolower='lower' bindscroll='scroll'
+                <scroll-view scroll-y class='scroll-wrapper' @scrolltoupper="upper" @scrolltolower='lower' @scroll='scroll'
                     scroll-top='100rpx'>
                     <div class='exam-wrapper' ref='eaxmWrapper'>
 
@@ -133,7 +133,7 @@
                 }
                 for (let index = 0; index < getList.length; index++) {
                     getList[index].imgSrc = getList[index].original_img_id;
-                    getList[index].examTime = getList[index].last_answer_time.Format(
+                    getList[index].examTime = getList[index].last_answer_time.format(
                         'yyyy.MM.dd hh:mm'
                     );
                 }
@@ -208,7 +208,7 @@
             itemClick(checked, exam) {
                 if (!this.isEidt) {
                     wx.navigateTo({
-                        url: `/pages/exam/main?sort=time&_id=` + exam._id
+                        url: `/pages/exam/main?mode=1&sort=time&_id=` + exam._id
                     });
                     return; //非编辑状态事件无效
                 }

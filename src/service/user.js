@@ -1,6 +1,6 @@
 import {
     ajax,
-    showFail
+    showToast
 } from '@/utils'
 import {
     USER
@@ -17,11 +17,11 @@ export function login() {
                     }
                 })
             } else {
-                showFail('登录失败！' + res.errMsg)
+                showToast('登录失败！' + res.errMsg)
             }
         },
         fail() {
-            showFail('微信出错啦')
+            showToast('微信出错啦')
         }
     })
 }
