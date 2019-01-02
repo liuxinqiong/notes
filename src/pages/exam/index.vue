@@ -6,7 +6,7 @@
                 <div class="scroll">
                     <div class="img-wrapper">
                         <canvas canvas-id="exam" id="exam" :style="{height: canvasHeight + 'px'}" disable-scroll="true"
-                            @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend"></canvas>
+                            @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
                         <p class="time">{{current.last_answer_time}}</p>
                     </div>
                     <div class="buttons">
@@ -30,11 +30,12 @@
                 <div class="share-img">
                     <i class="close" @click="closeShare"></i>
                     <div class="star-container">
-                        <star :count="2"></star>
+                        <star :count="startNo"></star>
                     </div>
-                    <div class="result">完成<span class="num">8</span>题</div>
+                    <div class="result">完成<span class="num">{{list.length}}</span>题</div>
                     <div class="user">
-                        <span class="name">wan啦啦</span>
+                        <open-data class="avatar" type="userAvatarUrl"></open-data>
+                        <open-data class="name" type="userNickName"></open-data>
                     </div>
                     <div class="des">正在使用错题库记忆哦！<br />快来参加吧</div>
                     <div class="code">
@@ -112,7 +113,8 @@
                 currentMode: 'normal',
                 currentIndex: 0,
                 rightCount: 0,
-                startNo: 0
+                startNo: 0,
+                showCanvas: true // canvas 层级太高
             }
         },
         components: {
@@ -170,11 +172,15 @@
             prev() {
                 if (this.index > 0 && this.index < this.list.length) {
                     this.loadItem(--this.index)
+                } else {
+                    showToast('没有更多啦')
                 }
             },
             next() {
                 if (this.index >= 0 && this.index < this.list.length - 1) {
                     this.loadItem(++this.index)
+                } else {
+                    showToast('没有更多啦')
                 }
             },
             async errorHandler(e) {
@@ -216,6 +222,7 @@
                 showLoading('正在保存')
                 try {
                     await Promise.all([finishTestRecord(this.exam_test_id, startNo), addTotalStar(startNo)])
+                    this.showCanvas = false
                     this.$refs.result.show()
                 } catch(e) {
                     console.log(e)
@@ -232,6 +239,9 @@
             },
             closeShare() {
                 this.$refs.share.hide()
+                wx.reLaunch({
+                    url: `/pages/index/main`
+                });
             },
             share() {
                 this.$refs.result.hide()
@@ -517,9 +527,24 @@
             .user {
                 margin-top: 57rpx;
                 margin-bottom: 49rpx;
-                font-size: 24rpx;
+                font-size: 0;
                 color: #75AD82;
-                text-align: center;
+                justify-content: center;
+                display: flex;
+                align-items: center;
+                .avatar {
+                    border-radius: 50%;
+                    width: 49rpx;
+                    height: 49rpx;
+                    border: 2rpx solid rgba(255,255,253,1);
+                    margin-right: 13rpx;
+                    display:inline-block;
+                    overflow: hidden;
+                    vertical-align: middle;
+                }
+                .name {
+                    font-size: 24rpx;
+                }
             }
 
             .des {
