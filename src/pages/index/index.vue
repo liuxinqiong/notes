@@ -3,7 +3,7 @@
         <img src="../../assets/img/background.png" class="bg">
         <div class="top">
             <span class="star">
-                <span class="text">20</span>
+                <span class="text">{{totalStar}}</span>
             </span>
             <a href="/pages/exam-list/main" class="group"></a>
         </div>
@@ -30,8 +30,15 @@
 </template>
 <script>
     import { takePhoto } from "@/utils";
-
+    import {
+        getTotalStar
+    } from '@/utils/wxDB';
     export default {
+        data(){
+            return {
+                totalStar:0
+            }
+        }
         methods: {
             async addExam() {
                 try {
@@ -47,6 +54,9 @@
         },
         created() {
 
+        },
+        async onShow() {
+            this.totalStar = await getTotalStar();
         },
         mounted() {}
     }
