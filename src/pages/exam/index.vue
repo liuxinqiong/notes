@@ -255,6 +255,9 @@
             },
             continueTest() {
                 this.$refs.result.hide()
+                this.showCanvas = true
+                this.currentMode = 'normal'
+                this.rightCount = 0
                 this.startTest()
             },
             saveLocal() {
@@ -287,6 +290,13 @@
                     if (this.list.length > 0) {
                         this.index = 0
                         this.loadItem(0)
+                    } else {
+                        showToast('错题库空空如也，先去录题吧')
+                        setTimeout(() => {
+                            wx.reLaunch({
+                                url: `/pages/index/main`
+                            });
+                        }, 1500)
                     }
                 } catch (e) {
                     console.log(e)

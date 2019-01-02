@@ -56,6 +56,8 @@
         },
         async mounted() {
             console.log('index mounted')
+        },
+        async onShow() {
             this.totalStar = await getTotalStar();
         }
     }

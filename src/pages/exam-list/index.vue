@@ -87,15 +87,15 @@
                 //重新加载
                 showLoading('数据加载中...');
                 this.pageNum = 1;
--               this.pageSize = 10;
--               this.isEidt = false;
--               this.leftListHeight = 0;
--               this.rightListHeight = 0;
--               this.clomunSegIndex = 0;
--               this.examList = [];
--               this.deleteList = [];
--               this.nextData = true;
--               this.isLock = false;
+                this.pageSize = 10;
+                this.isEidt = false;
+                this.leftListHeight = 0;
+                this.rightListHeight = 0;
+                this.clomunSegIndex = 0;
+                this.examList = [];
+                this.deleteList = [];
+                this.nextData = true;
+                this.isLock = false;
                 var getList = await this.loadData(); //加载数据
                 this.sortResponseList(getList);
                 this.$nextTick(function () {
