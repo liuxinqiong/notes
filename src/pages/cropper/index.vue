@@ -50,6 +50,7 @@
         showModal,
         fixBugInAndroid
     } from "@/utils";
+    import { resetPageData } from '@/utils/mixins'
     let SCREEN_WIDTH = 750;
     let PAGE_X, // 手按下的x位置
         PAGE_Y, // 手按下y的位置
@@ -69,6 +70,7 @@
         INIT_DRAG_POSITION = 200, // 初始化屏幕宽度和裁剪区域的宽度之差，用于设置初始化裁剪的宽度
         DRAW_IMAGE_W; // 设置生成的图片宽度
     export default {
+        mixins: [resetPageData],
         data() {
             return {
                 imageSrc: '',

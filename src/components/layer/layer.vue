@@ -1,5 +1,5 @@
 <template>
-    <div class="layer" v-if="isShow" @click="isShow = false">
+    <div class="layer" v-if="isShow" @click="autoclose ? isShow = false : ''">
         <div class="content" @click.stop>
             <slot></slot>
         </div>
@@ -7,6 +7,12 @@
 </template>
 <script>
     export default {
+        props: {
+            autoclose: {
+                type: Boolean,
+                default: true
+            }
+        },
         data() {
             return {
                 isShow: false

@@ -19,13 +19,13 @@
                 <div class="bottom">
                     <button class="mode1 error" v-if="mode" @click="errorHandler"></button>
                     <button class="mode0 prev" v-if="!mode" @click="prevHandler"></button>
-                    <p class="info">已完成8题目</p>
+                    <p class="info">已完成{{currentIndex}}题目</p>
                     <button class="mode1 right" v-if="mode" @click="rightHandler"></button>
                     <button class="mode0 next" v-if="!mode" @click="nextHandle"></button>
                 </div>
             </div>
         </fixed-view>
-        <layer ref="share">
+        <layer ref="share" :autoclose="false">
             <div class="share-layer">
                 <div class="share-img">
                     <i class="close" @click="closeShare"></i>
@@ -36,12 +36,27 @@
                     <div class="user">
                         <span class="name">wan啦啦</span>
                     </div>
-                    <div class="des">正在使用错题库记忆哦！<br/>快来参加吧</div>
+                    <div class="des">正在使用错题库记忆哦！<br />快来参加吧</div>
                     <div class="code">
                         <img src="../../assets/img/code.jpg" alt="">
                     </div>
                 </div>
                 <button class="save-local" @click="saveLocal">保存到本地分享</button>
+            </div>
+        </layer>
+        <layer ref="result" :autoclose="false">
+            <div class="result-layer">
+                <div class="result-img">
+                    <div class="star-container">
+                        <star :count="startNo" mode="two"></star>
+                    </div>
+                    <div class="result">完成<span class="num">{{list.length}}</span>题</div>
+                    <div class="btns">
+                        <button class="continue" @click="continueTest"></button>
+                        <button class="share" @click="share"></button>
+                        <button class="index" @click="toIndex"></button>
+                    </div>
+                </div>
             </div>
         </layer>
     </div>
@@ -50,27 +65,54 @@
     import fixedView from '@/components/fixed-view/fixed-view'
     import layer from '@/components/layer/layer'
     import star from '@/components/star/star'
-    import { loadExamsOrderByAnswerTimeFromOne, updateEditedImg } from '@/utils/wxDB'
-    import { createCanvasWrapper } from '@/utils/canvasWrapper'
-    import { downloadFile, getTempFileUrl, deleteFile, uploadExamImg } from '@/utils/wxFile'
+    import {
+        loadExamsOrderByAnswerTimeFromOne,
+        updateEditedImg,
+        loadAllExamsOrderByWeight,
+        loadAllExamsOrderByAnswerTime,
+        updateTestOrReciteExam,
+        insertTestRecord,
+        insertAnswerRecord,
+        finishTestRecord,
+        addTotalStar
+    } from '@/utils/wxDB'
+    import {
+        createCanvasWrapper
+    } from '@/utils/canvasWrapper'
+    import {
+        downloadFile,
+        getTempFileUrl,
+        deleteFile,
+        uploadExamImg
+    } from '@/utils/wxFile'
     import {
         showLoading,
         hideLoading,
         showSuccess,
         showToast
     } from '@/utils'
+    import { resetPageData } from '@/utils/mixins'
     const MODE = {
         STUDY: 0,
         EXAM: 1
     }
+    const UPDATETYPE = {
+        RIGHT: 1,
+        ERROR: 2,
+        RECITE: 3
+    }
     export default {
+        mixins: [resetPageData],
         data() {
             return {
                 mode: MODE.STUDY,
                 canvasHeight: 150,
                 list: [],
                 current: {},
-                currentMode: 'normal'
+                currentMode: 'normal',
+                currentIndex: 0,
+                rightCount: 0,
+                startNo: 0
             }
         },
         components: {
@@ -90,7 +132,7 @@
             },
             async save() {
                 const isPaint = this.canvasWrapper.isPaint()
-                if(!isPaint) {
+                if (!isPaint) {
                     showToast('没有修改，无需保存')
                     return
                 }
@@ -98,10 +140,10 @@
                 const path = await this.canvasWrapper.saveToTempFilePath()
                 const newId = await uploadExamImg(path)
                 const res = await updateEditedImg(this.current._id, newId)
-                if(res) {
+                if (res) {
                     showSuccess('保存成功')
                     // 有可能共享数据
-                    if(this.current.edited_img_id !== this.current.original_img_id) {
+                    if (this.current.edited_img_id !== this.current.original_img_id) {
                         await deleteFile([this.current.edited_img_id])
                         console.log('旧图片清理成功')
                     }
@@ -119,44 +161,102 @@
                 this.canvasWrapper.finishOneStep()
             },
             _draw(e) {
-                if(this.currentMode === 'scrawl') {
+                if (this.currentMode === 'scrawl') {
                     this.canvasWrapper.scrawl(e.touches[0].x, e.touches[0].y)
-                } else if(this.currentMode === 'eraser') {
+                } else if (this.currentMode === 'eraser') {
                     this.canvasWrapper.eraser(e.touches[0].x, e.touches[0].y)
                 }
             },
             prev() {
-                if(this.index > 0 && this.index < this.list.length) {
+                if (this.index > 0 && this.index < this.list.length) {
                     this.loadItem(--this.index)
                 }
             },
             next() {
-                if(this.index >= 0 && this.index < this.list.length - 1) {
+                if (this.index >= 0 && this.index < this.list.length - 1) {
                     this.loadItem(++this.index)
                 }
             },
-            errorHandler(e) {
-                // this.$refs.share.show()
-                this.prev()
+            async errorHandler(e) {
+                showLoading('更新状态')
+                await insertAnswerRecord({
+                    exam_id: this.current._id,
+                    used_time: Math.round((new Date().getTime() - this.startTime) / 1000),
+                    answer_result: UPDATETYPE.ERROR,
+                    exam_test_id: this.exam_test_id
+                })
+                const res = await updateTestOrReciteExam(this.current._id , UPDATETYPE.ERROR)
+                // 最后一道
+                this.currentIndex === this.list.length - 1 ? this.finishTest() : res && this.next()
             },
-            rightHandler() {
-                this.next()
+            async rightHandler() {
+                this.rightCount++
+                showLoading('更新状态')
+                await insertAnswerRecord({
+                    exam_id: this.current._id,
+                    used_time: Math.round((new Date().getTime() - this.startTime) / 1000),
+                    answer_result: UPDATETYPE.RIGHT,
+                    exam_test_id: this.exam_test_id
+                })
+                const res = await updateTestOrReciteExam(this.current._id , UPDATETYPE.RIGHT)
+                this.currentIndex === this.list.length - 1 ? this.finishTest() : res && this.next()
             },
-            prevHandler() {
-                this.prev()
+            async finishTest() {
+                // 计算星星
+                const rate = this.rightCount / this.list.length
+                let startNo = 0
+                if(rate > 5/6 && rate <= 1) {
+                    startNo = 3
+                } else if(rate > 0.5 && rate <= 5/6) {
+                    startNo = 2
+                } else if(rate > 0 && rate <= 0.5) {
+                    startNo = 1
+                }
+                this.startNo = startNo
+                showLoading('正在保存')
+                try {
+                    await Promise.all([finishTestRecord(this.exam_test_id, startNo), addTotalStar(startNo)])
+                    this.$refs.result.show()
+                } catch(e) {
+                    console.log(e)
+                }
+                hideLoading()
             },
-            nextHandle() {
-                this.next()
+            async prevHandler() {
+                const res = await updateTestOrReciteExam(this.current._id , UPDATETYPE.RECITE)
+                res && this.prev()
+            },
+            async nextHandle() {
+                const res = await updateTestOrReciteExam(this.current._id , UPDATETYPE.RECITE)
+                res && this.next()
             },
             closeShare() {
                 this.$refs.share.hide()
+            },
+            share() {
+                this.$refs.result.hide()
+                this.$refs.share.show()
+            },
+            toIndex() {
+                this.$refs.result.hide()
+                wx.reLaunch({
+                    url: `/pages/index/main`
+                });
+            },
+            continueTest() {
+                this.$refs.result.hide()
+                this.startTest()
             },
             saveLocal() {
 
             },
             async loadItem(index) {
                 showLoading('加载题目中')
-                const [original_img_src, edited_img_src] = await Promise.all([downloadFile(this.list[index].original_img_id), downloadFile(this.list[index].edited_img_id)])
+                const [original_img_src, edited_img_src] = await Promise.all([
+                    downloadFile(this.list[index].original_img_id),
+                    downloadFile(this.list[index].edited_img_id)
+                ])
+                this.currentIndex = index
                 this.current = {
                     ...this.list[index],
                     original_img_src,
@@ -167,34 +267,53 @@
                 this.canvasWrapper = await createCanvasWrapper(edited_img_src, 'exam', original_img_src)
                 this.canvasHeight = this.canvasWrapper.height
                 this.canvasWrapper.drawImage(true)
+                this.startTime = new Date().getTime()
                 hideLoading()
             },
-            async loadListById() {
+            async loadList(func, ...args) {
                 showLoading('加载题库中')
                 try {
-                    this.list = await loadExamsOrderByAnswerTimeFromOne(this.fromId)
-                    if(this.list.length > 0) {
+                    this.list = await func(...args)
+                    if (this.list.length > 0) {
                         this.index = 0
                         this.loadItem(0)
                     }
-                } catch(e) {
+                } catch (e) {
                     console.log(e)
+                }
+            },
+            async startTest() {
+                // 测验
+                if (this.mode == MODE.EXAM) {
+                    this.exam_test_id = await insertTestRecord()
+                    if (this.fromId) {
+                        this.loadList(loadExamsOrderByAnswerTimeFromOne, this.fromId)
+                    } else {
+                        this.loadList(loadAllExamsOrderByWeight)
+                    }
+                } else {
+                    this.loadList(loadAllExamsOrderByAnswerTime)
                 }
             }
         },
-        mounted() {
-           this.mode = +this.$root.$mp.query.mode
-           this.fromId = this.$root.$mp.query._id
-           this.sort = this.$root.$mp.query.sort
-           if(this.fromId) {
-               this.loadListById()
-           }
+        async mounted() {
+            console.log('exam mounted')
+            this.mode = +this.$root.$mp.query.mode
+            this.fromId = this.$root.$mp.query._id
+            this.sort = this.$root.$mp.query.sort
+            this.startTest()
+        },
+        onUnload() {
+            console.log('exam onUnload')
+            this.$refs.result && this.$refs.result.hide()
+            this.$refs.share && this.$refs.share.hide()
         }
     }
 
 </script>
 <style lang="scss" scoped>
     @import '@/styles/mixin.scss';
+
     .exam {
         height: 100%;
         position: relative;
@@ -223,9 +342,11 @@
             img {
                 width: 100%;
             }
+
             canvas {
                 width: 100%;
             }
+
             .time {
                 color: #FFF;
                 font-size: 20rpx;
@@ -310,6 +431,52 @@
         }
     }
 
+    .result-layer {
+        .result-img {
+            width: 722rpx;
+            height: 826rpx;
+            background: url('./img/res-bg.png') no-repeat;
+            background-size: 100% 100%;
+            margin: auto;
+            position: relative;
+            overflow: hidden;
+        }
+        .star-container {
+            margin-top: 196rpx;
+        }
+        .result {
+            margin-top: 45rpx;
+            text-align: center;
+            color: #FFF7ED;
+            font-size: 38rpx;
+            .num {
+                font-size: 74rpx;
+            }
+        }
+        .btns {
+            margin-top: 45rpx;
+            display: flex;
+            margin-left: 144rpx;
+            margin-right: 156rpx;
+            button {
+                width: 102rpx;
+                height: 159rpx;
+            }
+            .continue {
+                background: url('./img/res-continue.png') no-repeat;
+                background-size: 100% 100%;
+            }
+            .share {
+                background: url('./img/res-share.png') no-repeat;
+                background-size: 100% 100%;
+            }
+            .index {
+                background: url('./img/res-index.png') no-repeat;
+                background-size: 100% 100%;
+            }
+        }
+    }
+
     .share-layer {
         .share-img {
             width: 681rpx;
@@ -319,6 +486,7 @@
             margin: auto;
             position: relative;
             overflow: hidden;
+
             .close {
                 position: absolute;
                 width: 22rpx;
@@ -327,20 +495,25 @@
                 background-size: 100% 100%;
                 right: 44rpx;
                 top: 44rpx;
-                @include extend-click;/*it worked, only can't see the element*/
+                @include extend-click;
+                /*it worked, only can't see the element*/
             }
+
             .star-container {
                 margin-top: 147rpx;
             }
+
             .result {
                 margin-top: 32rpx;
                 text-align: center;
                 font-size: 38rpx;
                 color: #75AD82;
+
                 .num {
                     font-size: 74rpx;
                 }
             }
+
             .user {
                 margin-top: 57rpx;
                 margin-bottom: 49rpx;
@@ -348,14 +521,17 @@
                 color: #75AD82;
                 text-align: center;
             }
+
             .des {
                 text-align: center;
                 color: #878787;
                 font-size: 24rpx;
             }
+
             .code {
                 margin-top: 51rpx;
                 text-align: center;
+
                 img {
                     width: 209rpx;
                     height: 209rpx;
@@ -363,6 +539,7 @@
                 }
             }
         }
+
         .save-local {
             width: 515rpx;
             line-height: 99rpx;
@@ -372,4 +549,5 @@
             color: #fff;
         }
     }
+
 </style>

@@ -33,12 +33,14 @@
     import {
         getTotalStar
     } from '@/utils/wxDB';
+    import { resetPageData } from '@/utils/mixins'
     export default {
+        mixins: [resetPageData],
         data(){
             return {
                 totalStar:0
             }
-        }
+        },
         methods: {
             async addExam() {
                 try {
@@ -52,13 +54,10 @@
                 }
             },
         },
-        created() {
-
-        },
-        async onShow() {
+        async mounted() {
+            console.log('index mounted')
             this.totalStar = await getTotalStar();
-        },
-        mounted() {}
+        }
     }
 
 </script>

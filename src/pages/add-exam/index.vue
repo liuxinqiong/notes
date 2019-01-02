@@ -19,6 +19,7 @@
     import { uploadExamImg } from '@/utils/wxFile'
     import { insertExamData } from '@/utils/wxDB'
     import { createCanvasWrapper } from '@/utils/canvasWrapper'
+    import { resetPageData } from '@/utils/mixins'
     import {
         showLoading,
         hideLoading,
@@ -27,6 +28,7 @@
     } from '@/utils'
     const canvasId = 'addExam'
     export default {
+        mixins: [resetPageData],
         data() {
             return {
                 canvasHeight: 150,
@@ -94,16 +96,10 @@
                 this.isClear ? this.canvasWrapper.eraser(e.touches[0].x, e.touches[0].y) : this.canvasWrapper.scrawl(e.touches[0].x, e.touches[0].y)
             }
         },
-        onShow() {
-            this.src = this.$root.$mp.query.src
-            this.isClear = false
-            this.init()
-        },
         mounted() {
-            console.log('mounted')
-        },
-        created() {
-            console.log('created')
+            console.log('add-exam mounted')
+            this.src = this.$root.$mp.query.src
+            this.init()
         }
     }
 </script>

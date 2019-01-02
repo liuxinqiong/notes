@@ -36,6 +36,7 @@
 <script>
     import BackBtn from '@/components/back-btn/back-btn';
     import ExamItem from '@/components/exam-item/exam-item';
+    import { resetPageData } from '@/utils/mixins'
     import {
         showModal,
         arrayRemove,
@@ -53,6 +54,7 @@
         deleteFile
     } from '@/utils/wxFile';
     export default {
+        mixins: [resetPageData],
         data() {
             return {
                 isEidt: false,
@@ -70,11 +72,9 @@
                 examList: []
             };
         },
-        created() {
-
-        },
-        async onShow() {
+        async mounted() {
             await this.reload();
+            console.log('exam-list mounted')
         },
         methods: {
             async lower(e) {
@@ -86,16 +86,6 @@
             async reload() {
                 //重新加载
                 showLoading('数据加载中...');
-                this.pageNum = 1;
-                this.pageSize = 10;
-                this.isEidt = false;
-                this.leftListHeight = 0;
-                this.rightListHeight = 0;
-                this.clomunSegIndex = 0;
-                this.examList = [];
-                this.deleteList = [];
-                this.nextData = true;
-                this.isLock = false;
                 var getList = await this.loadData(); //加载数据
                 this.sortResponseList(getList);
                 this.$nextTick(function () {
