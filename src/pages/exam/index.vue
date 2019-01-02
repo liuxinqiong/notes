@@ -92,7 +92,9 @@
         showSuccess,
         showToast
     } from '@/utils'
-    import { resetPageData } from '@/utils/mixins'
+    import {
+        resetPageData
+    } from '@/utils/mixins'
     const MODE = {
         STUDY: 0,
         EXAM: 1
@@ -185,37 +187,37 @@
             },
             async errorHandler(e) {
                 showLoading('更新状态')
-                await insertAnswerRecord({
-                    exam_id: this.current._id,
-                    used_time: Math.round((new Date().getTime() - this.startTime) / 1000),
-                    answer_result: UPDATETYPE.ERROR,
-                    exam_test_id: this.exam_test_id
-                })
-                const res = await updateTestOrReciteExam(this.current._id , UPDATETYPE.ERROR)
+                // await insertAnswerRecord({
+                //     exam_id: this.current._id,
+                //     used_time: Math.round((new Date().getTime() - this.startTime) / 1000),
+                //     answer_result: UPDATETYPE.ERROR,
+                //     exam_test_id: this.exam_test_id
+                // })
+                const res = await updateTestOrReciteExam(this.current._id, UPDATETYPE.ERROR)
                 // 最后一道
                 this.currentIndex === this.list.length - 1 ? this.finishTest() : res && this.next()
             },
             async rightHandler() {
                 this.rightCount++
                 showLoading('更新状态')
-                await insertAnswerRecord({
-                    exam_id: this.current._id,
-                    used_time: Math.round((new Date().getTime() - this.startTime) / 1000),
-                    answer_result: UPDATETYPE.RIGHT,
-                    exam_test_id: this.exam_test_id
-                })
-                const res = await updateTestOrReciteExam(this.current._id , UPDATETYPE.RIGHT)
+                // await insertAnswerRecord({
+                //     exam_id: this.current._id,
+                //     used_time: Math.round((new Date().getTime() - this.startTime) / 1000),
+                //     answer_result: UPDATETYPE.RIGHT,
+                //     exam_test_id: this.exam_test_id
+                // })
+                const res = await updateTestOrReciteExam(this.current._id, UPDATETYPE.RIGHT)
                 this.currentIndex === this.list.length - 1 ? this.finishTest() : res && this.next()
             },
             async finishTest() {
                 // 计算星星
                 const rate = this.rightCount / this.list.length
                 let startNo = 0
-                if(rate > 5/6 && rate <= 1) {
+                if (rate > 5 / 6 && rate <= 1) {
                     startNo = 3
-                } else if(rate > 0.5 && rate <= 5/6) {
+                } else if (rate > 0.5 && rate <= 5 / 6) {
                     startNo = 2
-                } else if(rate > 0 && rate <= 0.5) {
+                } else if (rate > 0 && rate <= 0.5) {
                     startNo = 1
                 }
                 this.startNo = startNo
@@ -224,17 +226,17 @@
                     await Promise.all([finishTestRecord(this.exam_test_id, startNo), addTotalStar(startNo)])
                     this.showCanvas = false
                     this.$refs.result.show()
-                } catch(e) {
+                } catch (e) {
                     console.log(e)
                 }
                 hideLoading()
             },
             async prevHandler() {
-                const res = await updateTestOrReciteExam(this.current._id , UPDATETYPE.RECITE)
+                const res = await updateTestOrReciteExam(this.current._id, UPDATETYPE.RECITE)
                 res && this.prev()
             },
             async nextHandle() {
-                const res = await updateTestOrReciteExam(this.current._id , UPDATETYPE.RECITE)
+                const res = await updateTestOrReciteExam(this.current._id, UPDATETYPE.RECITE)
                 res && this.next()
             },
             closeShare() {
@@ -451,35 +453,43 @@
             position: relative;
             overflow: hidden;
         }
+
         .star-container {
             margin-top: 196rpx;
         }
+
         .result {
             margin-top: 45rpx;
             text-align: center;
             color: #FFF7ED;
             font-size: 38rpx;
+
             .num {
                 font-size: 74rpx;
             }
         }
+
         .btns {
             margin-top: 45rpx;
             display: flex;
             margin-left: 144rpx;
             margin-right: 156rpx;
+
             button {
                 width: 102rpx;
                 height: 159rpx;
             }
+
             .continue {
                 background: url('./img/res-continue.png') no-repeat;
                 background-size: 100% 100%;
             }
+
             .share {
                 background: url('./img/res-share.png') no-repeat;
                 background-size: 100% 100%;
             }
+
             .index {
                 background: url('./img/res-index.png') no-repeat;
                 background-size: 100% 100%;
@@ -532,16 +542,18 @@
                 justify-content: center;
                 display: flex;
                 align-items: center;
+
                 .avatar {
                     border-radius: 50%;
                     width: 49rpx;
                     height: 49rpx;
-                    border: 2rpx solid rgba(255,255,253,1);
+                    border: 2rpx solid rgba(255, 255, 253, 1);
                     margin-right: 13rpx;
-                    display:inline-block;
+                    display: inline-block;
                     overflow: hidden;
                     vertical-align: middle;
                 }
+
                 .name {
                     font-size: 24rpx;
                 }

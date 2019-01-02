@@ -16,10 +16,18 @@
 </template>
 <script>
     import fixedView from '@/components/fixed-view/fixed-view'
-    import { uploadExamImg } from '@/utils/wxFile'
-    import { insertExamData } from '@/utils/wxDB'
-    import { createCanvasWrapper } from '@/utils/canvasWrapper'
-    import { resetPageData } from '@/utils/mixins'
+    import {
+        uploadExamImg
+    } from '@/utils/wxFile'
+    import {
+        insertExamData
+    } from '@/utils/wxDB'
+    import {
+        createCanvasWrapper
+    } from '@/utils/canvasWrapper'
+    import {
+        resetPageData
+    } from '@/utils/mixins'
     import {
         showLoading,
         hideLoading,
@@ -53,9 +61,10 @@
                 const isPaint = this.canvasWrapper.isPaint()
                 let original_img_id, edited_img_id
                 try {
-                    if(isPaint) {
+                    if (isPaint) {
                         const path = await this.canvasWrapper.saveToTempFilePath()
-                        const result = await Promise.all([uploadExamImg(this.canvasWrapper.imageSrc), uploadExamImg(path)])
+                        const result = await Promise.all([uploadExamImg(this.canvasWrapper.imageSrc), uploadExamImg(
+                            path)])
                         original_img_id = result[0]
                         edited_img_id = result[1]
                     } else {
@@ -70,11 +79,11 @@
                     })
                     showSuccess('保存成功')
                     setTimeout(() => {
-                        wx.reLaunch({
-                            url: `/pages/index/main`
+                        wx.redirectTo({
+                            url: `/pages/exam-list/main`
                         });
                     }, 1500)
-                } catch(e) {
+                } catch (e) {
                     showToast('保存失败')
                 }
             },
@@ -93,7 +102,8 @@
                 this.canvasWrapper.finishOneStep()
             },
             _draw(e) {
-                this.isClear ? this.canvasWrapper.eraser(e.touches[0].x, e.touches[0].y) : this.canvasWrapper.scrawl(e.touches[0].x, e.touches[0].y)
+                this.isClear ? this.canvasWrapper.eraser(e.touches[0].x, e.touches[0].y) : this.canvasWrapper.scrawl(e.touches[
+                    0].x, e.touches[0].y)
             }
         },
         mounted() {
@@ -102,6 +112,7 @@
             this.init()
         }
     }
+
 </script>
 <style lang="scss" scoped>
     .add-exam {
@@ -110,6 +121,7 @@
         height: 100%;
         box-sizing: border-box;
         position: relative;
+
         .tip {
             background-color: #02BB00;
             position: absolute;
@@ -121,8 +133,10 @@
             top: 0;
             left: 0;
         }
+
         .img-wrapper {
             position: relative;
+
             canvas {
                 width: 100%;
             }
