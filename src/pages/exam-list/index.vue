@@ -34,9 +34,11 @@
     </div>
 </template>
 <script>
-    import BackBtn from '@/components/back-btn/back-btn';
-    import ExamItem from '@/components/exam-item/exam-item';
-    import { resetPageData } from '@/utils/mixins'
+    import BackBtn from "@/components/back-btn/back-btn";
+    import ExamItem from "@/components/exam-item/exam-item";
+    import {
+        resetPageData
+    } from "@/utils/mixins";
     import {
         showModal,
         arrayRemove,
@@ -44,15 +46,15 @@
         showLoading,
         hideLoading,
         showSuccess
-    } from '@/utils';
+    } from "@/utils";
     import {
         insertExamData,
         loadExamsOrder,
         deleteExamCallCloudByIds
-    } from '@/utils/wxDB';
+    } from "@/utils/wxDB";
     import {
         deleteFile
-    } from '@/utils/wxFile';
+    } from "@/utils/wxFile";
     export default {
         mixins: [resetPageData],
         data() {
@@ -62,7 +64,7 @@
                 pageSize: 10,
                 nextData: true,
                 isLock: false,
-                orderCol: 'last_answer_time',
+                orderCol: "last_answer_time",
                 itemWidth: 294,
                 deleteList: [], //需要删除的列表
                 leftListHeight: 0,
@@ -74,7 +76,7 @@
         },
         async mounted() {
             await this.reload();
-            console.log('exam-list mounted')
+            console.log("exam-list mounted");
         },
         methods: {
             async lower(e) {
@@ -85,7 +87,7 @@
             },
             async reload() {
                 //重新加载
-                showLoading('数据加载中...');
+                showLoading("数据加载中...");
                 this.pageNum = 1;
                 this.pageSize = 10;
                 this.isEidt = false;
@@ -101,21 +103,21 @@
                 this.$nextTick(function () {
                     hideLoading();
                 });
-
             },
             async getNextPageData() {
-                if (this.isLock) //防止重复加载
+                if (this.isLock)
+                    //防止重复加载
                     return;
                 if (!this.nextData) {
                     wx.showToast({
-                        title: '没有更多数据了',
-                        icon: 'none'
+                        title: "没有更多数据了",
+                        icon: "none"
                     });
                     return;
                 }
                 this.isLock = true;
                 this.pageNum++;
-                showLoading('数据加载中...');
+                showLoading("数据加载中...");
                 var getList = await this.loadData(); //加载数据
                 this.sortResponseList(getList);
                 this.$nextTick(function () {
@@ -137,7 +139,7 @@
                 for (let index = 0; index < getList.length; index++) {
                     getList[index].imgSrc = getList[index].original_img_id;
                     getList[index].examTime = getList[index].last_answer_time.format(
-                        'yyyy.MM.dd hh:mm'
+                        "yyyy.MM.dd hh:mm"
                     );
                 }
                 return getList;
@@ -177,10 +179,10 @@
             async deleteExam() {
                 //TODO
                 if (this.deleteList.length <= 0) {
-                    showModal('提示', '请选择要删除的题目');
+                    showModal("提示", "请选择要删除的题目");
                 } else {
                     //去云数据库删除
-                    showLoading('正在删除中...');
+                    showLoading("正在删除中...");
                     let examIds = [];
                     for (let index = 0; index < this.deleteList.length; index++) {
                         examIds.push(this.deleteList[index]._id);
@@ -191,8 +193,10 @@
                     for (let index = 0; index < this.deleteList.length; index++) {
                         //确保数据删除再删除图片
                         fileIds.push(this.deleteList[index].original_img_id); //原图
-                        if (this.deleteList[index].eidted_img_id != null &&
-                            this.deleteList[index].eidted_img_id != '') {
+                        if (
+                            this.deleteList[index].eidted_img_id != null &&
+                            this.deleteList[index].eidted_img_id != ""
+                        ) {
                             //编辑图
                             fileIds.push(this.deleteList[index].eidted_img_id);
                         }
