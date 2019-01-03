@@ -4,8 +4,8 @@
             <div class="exam">
                 <div class="tip" v-if="currentMode !== 'normal'">当前处于{{currentMode === 'eraser' ? '橡皮擦' : '涂抹'}}模式</div>
                 <div class="scroll">
-                    <div class="img-wrapper">
-                        <canvas canvas-id="exam" id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
+                    <div class="img-wrapper" id="exam">
+                        <canvas canvas-id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                             @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
                         <p class="time">{{current.last_answer_time}}</p>
                     </div>

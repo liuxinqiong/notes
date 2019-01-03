@@ -2,8 +2,8 @@
     <fixed-view>
         <div class="add-exam">
             <div class="tip" v-if="isClear">当前处于橡皮擦模式</div>
-            <div class="img-wrapper">
-                <canvas canvas-id="addExam" id="addExam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
+            <div class="img-wrapper" id="addExam">
+                <canvas canvas-id="addExam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                     @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend"></canvas>
             </div>
             <div class="buttons">
