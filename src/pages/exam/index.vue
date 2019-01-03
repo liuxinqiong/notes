@@ -5,7 +5,7 @@
                 <div class="tip" v-if="currentMode !== 'normal'">当前处于{{currentMode === 'eraser' ? '橡皮擦' : '涂抹'}}模式</div>
                 <div class="scroll">
                     <div class="img-wrapper">
-                        <canvas canvas-id="exam" id="exam" :style="{height: canvasHeight + 'px'}" disable-scroll="true"
+                        <canvas canvas-id="exam" id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                             @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
                         <p class="time">{{current.last_answer_time}}</p>
                     </div>
@@ -32,7 +32,7 @@
                     <div class="star-container">
                         <star :count="startNo"></star>
                     </div>
-                    <div class="result">完成<span class="num">{{list.length}}</span>题</div>
+                    <div class="result">完成<span class="num">{{currentIndex + 1}}</span>题</div>
                     <div class="user">
                         <open-data class="avatar" type="userAvatarUrl"></open-data>
                         <open-data class="name" type="userNickName"></open-data>
@@ -51,7 +51,7 @@
                     <div class="star-container">
                         <star :count="startNo" mode="two"></star>
                     </div>
-                    <div class="result">完成<span class="num">{{list.length}}</span>题</div>
+                    <div class="result">完成<span class="num">{{currentIndex + 1}}</span>题</div>
                     <div class="btns">
                         <button class="continue" @click="continueTest"></button>
                         <button class="share" @click="share"></button>
@@ -90,7 +90,8 @@
         showLoading,
         hideLoading,
         showSuccess,
-        showToast
+        showToast,
+        generateExamList
     } from '@/utils'
     import {
         resetPageData
@@ -109,8 +110,8 @@
         data() {
             return {
                 mode: MODE.STUDY,
-                canvasHeight: 150,
-                list: [],
+                canvasHeight: '150px',
+                canvasWidth: '100%',
                 current: {},
                 currentMode: 'normal',
                 currentIndex: 0,
@@ -156,6 +157,7 @@
                 }
             },
             touchstart(e) {
+                this.canvasWrapper.setTouch(e.touches[0].x, e.touches[0].y)
                 this._draw(e)
             },
             touchmove(e) {
@@ -172,15 +174,15 @@
                 }
             },
             prev() {
-                if (this.index > 0 && this.index < this.list.length) {
-                    this.loadItem(--this.index)
+                if (this.currentIndex > 0 && this.currentIndex < this.list.length) {
+                    this.loadItem(--this.currentIndex)
                 } else {
                     showToast('没有更多啦')
                 }
             },
             next() {
-                if (this.index >= 0 && this.index < this.list.length - 1) {
-                    this.loadItem(++this.index)
+                if (this.currentIndex >= 0 && this.currentIndex < this.list.length - 1) {
+                    this.loadItem(++this.currentIndex)
                 } else {
                     showToast('没有更多啦')
                 }
@@ -260,7 +262,9 @@
                 this.showCanvas = true
                 this.currentMode = 'normal'
                 this.rightCount = 0
-                this.startTest()
+                this.list = generateExamList(this.allExams, this.currentIndex + 1, 30)
+                this.currentIndex = 0
+                this.loadItem(0)
             },
             saveLocal() {
 
@@ -271,7 +275,6 @@
                     downloadFile(this.list[index].original_img_id),
                     downloadFile(this.list[index].edited_img_id)
                 ])
-                this.currentIndex = index
                 this.current = {
                     ...this.list[index],
                     original_img_src,
@@ -280,7 +283,8 @@
                 }
                 console.log(this.current._id)
                 this.canvasWrapper = await createCanvasWrapper(edited_img_src, 'exam', original_img_src)
-                this.canvasHeight = this.canvasWrapper.height
+                this.canvasHeight = this.canvasWrapper.height + 'px'
+                this.canvasWidth = this.canvasWrapper.width + 'px'
                 this.canvasWrapper.drawImage(true)
                 this.startTime = new Date().getTime()
                 hideLoading()
@@ -288,18 +292,23 @@
             async loadList(func, ...args) {
                 showLoading('加载题库中')
                 try {
-                    this.list = await func(...args)
-                    if (this.list.length > 0) {
-                        this.index = 0
-                        this.loadItem(0)
-                    } else {
+                    this.allExams = await func(...args)
+                    if(!this.allExams || this.allExams.length === 0) {
                         showToast('错题库空空如也，先去录题吧')
                         setTimeout(() => {
                             wx.reLaunch({
                                 url: `/pages/index/main`
                             });
                         }, 1500)
+                        return
                     }
+                    if(this.mode === MODE.STUDY) {
+                        this.list = this.allExams
+                    } else {
+                        this.list = generateExamList(this.allExams, 0, 30)
+                    }
+                    this.currentIndex = 0
+                    this.loadItem(0)
                 } catch (e) {
                     console.log(e)
                 }
@@ -323,6 +332,8 @@
             this.mode = +this.$root.$mp.query.mode
             this.fromId = this.$root.$mp.query._id
             this.sort = this.$root.$mp.query.sort
+            this.allExams = [] // 题库
+            this.list = [] // 选取的题目集合
             this.startTest()
         },
         onUnload() {
@@ -367,6 +378,7 @@
 
             canvas {
                 width: 100%;
+                margin: auto;
             }
 
             .time {
@@ -376,7 +388,7 @@
         }
 
         .buttons {
-            margin-top: 88rpx;
+            margin-top: 10rpx;
             display: flex;
 
             .scrawl {

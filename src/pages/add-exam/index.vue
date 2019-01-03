@@ -3,7 +3,7 @@
         <div class="add-exam">
             <div class="tip" v-if="isClear">当前处于橡皮擦模式</div>
             <div class="img-wrapper">
-                <canvas canvas-id="addExam" id="addExam" :style="{height: canvasHeight + 'px'}" disable-scroll="true"
+                <canvas canvas-id="addExam" id="addExam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                     @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend"></canvas>
             </div>
             <div class="buttons">
@@ -39,7 +39,8 @@
         mixins: [resetPageData],
         data() {
             return {
-                canvasHeight: 150,
+                canvasHeight: '150px',
+                canvasWidth: '100%',
                 isClear: false
             }
         },
@@ -89,10 +90,12 @@
             },
             async init() {
                 this.canvasWrapper = await createCanvasWrapper(this.src, canvasId)
-                this.canvasHeight = this.canvasWrapper.height
+                this.canvasHeight = this.canvasWrapper.height + 'px'
+                this.canvasWidth = this.canvasWrapper.width + 'px'
                 this.canvasWrapper.drawImage(true)
             },
             touchstart(e) {
+                this.canvasWrapper.setTouch(e.touches[0].x, e.touches[0].y)
                 this._draw(e)
             },
             touchmove(e) {
@@ -139,6 +142,7 @@
 
             canvas {
                 width: 100%;
+                margin: auto;
             }
         }
 

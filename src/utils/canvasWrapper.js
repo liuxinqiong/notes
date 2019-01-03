@@ -16,12 +16,22 @@ export default class CanvasWrapper {
         this.touchmoveEnable = true
         this.context = wx.createCanvasContext(canvasId)
         this.erased = false
+        this.touch = {}
+    }
+
+    setTouch(x, y) {
+        this.touch = {
+            startX: x,
+            startY: y
+        }
     }
 
     // 完成动作
     finishOneStep() {
-        this.executeActions.push(this.stepActions)
-        this.stepActions = []
+        if(this.stepActions.length) {
+            this.executeActions.push(this.stepActions)
+            this.stepActions = []
+        }
     }
 
     drawImage(immediate, useOrigin) {
@@ -60,11 +70,19 @@ export default class CanvasWrapper {
             return
         }
         this.touchmoveEnable = false
-        this.stepActions.push([x, y, 10, 0, Math.PI * 2])
-        this.context.setFillStyle('#fff')
-        this.context.beginPath()
-        this.context.arc(x, y, 10, 0, Math.PI * 2)
-        this.context.fill()
+        this.stepActions.push({
+            pointA: [this.touch.startX, this.touch.startY],
+            pointB: [x, y]
+        })
+        this.context.setStrokeStyle('#fff')
+        this.context.setLineWidth(20)
+        this.context.setLineCap('round') // 让线条圆润
+        this.context.save()
+        this.context.moveTo(this.touch.startX, this.touch.startY)
+        this.context.lineTo(x, y)
+        this.context.stroke()
+        this.context.restore()
+        this.setTouch(x, y)
         this.context.draw(true, () => {
             this.touchmoveEnable = true
         })
@@ -96,13 +114,18 @@ export default class CanvasWrapper {
         this.backEnable = false
         this.executeActions.pop()
         this.drawImage(false)
+        this.context.setStrokeStyle('#fff')
+        this.context.setLineWidth(20)
+        this.context.setLineCap('round') // 让线条圆润
+        this.context.save()
         this.executeActions.forEach(steps => {
             steps.forEach(action => {
-                this.context.arc(...action)
+                this.context.moveTo(...action.pointA)
+                this.context.lineTo(...action.pointB)
             })
         });
-        this.context.setFillStyle('#fff')
-        this.context.fill()
+        this.context.stroke()
+        this.context.restore()
         this.context.draw(false, () => {
             this.backEnable = true
         })
@@ -121,8 +144,16 @@ export async function createCanvasWrapper(imageSrc, canvasId, originalImageSrc) 
         const data = await Promise.all([getImageInfo(imageSrc), getNodeRect(`#${canvasId}`)])
         const [imageInfo, canvasInfo] = data
         const radio = imageInfo.width / imageInfo.height
-        const canvasHeight = canvasInfo.width / radio
-        return new CanvasWrapper(imageSrc, originalImageSrc, canvasId, canvasInfo.width, canvasHeight)
+        const res = wx.getSystemInfoSync()
+        // 不要问我为啥630，手动算出来的，缺点：不够弹性，此为待优化处
+        const maxHeight = res.windowHeight - (630 * res.windowWidth / 750)
+        let canvasWidth = canvasInfo.width
+        let canvasHeight = canvasWidth / radio
+        if(maxHeight < canvasHeight) {
+            canvasHeight = maxHeight
+            canvasWidth = maxHeight * radio
+        }
+        return new CanvasWrapper(imageSrc, originalImageSrc, canvasId, canvasWidth, canvasHeight)
     } catch (e) {
         console.log(e)
     }

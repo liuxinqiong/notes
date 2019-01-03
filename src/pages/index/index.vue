@@ -23,9 +23,7 @@
                 </div>
             </div>
         </div>
-        <div class="bottom">
-            <button class="add-exam" @click="addExam"></button>
-        </div>
+        <button class="add-exam" @click="addExam"></button>
     </div>
 </template>
 <script>
@@ -65,8 +63,11 @@
 </script>
 <style lang="scss" scoped>
     .container {
-        position: relative;
-        min-height: 100%;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
         .bg {
             position: absolute;
             width: 100%;
@@ -75,7 +76,7 @@
         }
 
         .top {
-            padding: 32rpx 59rpx 61rpx 52rpx;
+            padding: 32rpx 59rpx 32rpx 52rpx;
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -105,8 +106,11 @@
 
         // 边框
         .main-card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
             width: 630rpx;
-            height: 958rpx;
+            transform: translate3d(-50%, -50%, 0);
             background: rgba(136, 200, 125, 1);
             border-top-left-radius: 315rpx 88rpx;
             border-top-right-radius: 315rpx 88rpx;
@@ -114,7 +118,6 @@
             border-bottom-right-radius: 44rpx;
             margin: auto;
             box-sizing: border-box;
-            position: relative;
             padding: 38rpx 30rpx;
             .content {
                 background: rgba(240, 242, 213, 1);
@@ -124,14 +127,14 @@
                 border-bottom-left-radius: 44rpx;
                 border-bottom-right-radius: 44rpx;
                 width: 569rpx;
-                height: 881rpx;
                 overflow: hidden;
                 .logo {
                     text-align: center;
-                    margin-top: 73rpx;
+                    margin-top: 50rpx;
                     img {
                         width: 349rpx;
                         height: 133rpx;
+                        vertical-align:middle;
                     }
                 }
                 .info {
@@ -153,7 +156,7 @@
                     }
                 }
                 .buttons {
-                    margin-top: 17rpx;
+                    height: 283rpx;
                     a {
                         display: block;
                         margin: auto;
@@ -167,22 +170,25 @@
                     .test {
                         background: url('./img/test.png') no-repeat;
                         background-size: 100% 100%;
-                        position: relative;
-                        top: -17rpx;
+                        position: absolute;
+                        margin-top: -17rpx;
+                        left: 0;
+                        right: 0;
                     }
                 }
             }
         }
-        .bottom {
+
+        .add-exam {
+            position: absolute;
+            bottom: 52rpx;
+            right: 90rpx;
+            width: 186rpx;
             height: 68rpx;
-            padding: 75rpx 90rpx 52rpx;
-            .add-exam {
-                width: 186rpx;
-                height: 68rpx;
-                background: url('./img/photograph.png') no-repeat;
-                background-size: 100% 100%;
-                float: right;
-            }
+            background: url('./img/photograph.png') no-repeat;
+            background-size: 100% 100%;
+            float: right;
         }
+
     }
 </style>
