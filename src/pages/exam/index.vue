@@ -60,7 +60,7 @@
                 </div>
             </div>
         </layer>
-        <canvas canvas-id="share" id="share" class="share-canvas"></canvas>
+        <canvas canvas-id="share" id="share" class="share-canvas" :style="{width: '341px', height: '499px'}"></canvas>
     </div>
 </template>
 <script>
@@ -292,8 +292,8 @@
                     ctx.closePath();
                 }
                 const computeStar = function(starNo) {
-                    const fullStar = require('@/components/star/img/full1.png')
-                    const emptyStar = require('@/components/star/img/empty1.png')
+                    const fullStar = '../../static/full.png'
+                    const emptyStar = '../../static/empty.png'
                     if(starNo === 0) {
                         return [emptyStar, emptyStar, emptyStar]
                     } else if(starNo === 1){
@@ -312,7 +312,7 @@
                 try {
                     const ctx = wx.createCanvasContext('share')
                     // 处理背景图
-                    const shareBg = require('./img/share-bg.png')
+                    const shareBg = '../../static/share-bg.png'
                     ctx.drawImage(shareBg, 0, 0, 341, 499)
                     // 处理文字
                     ctx.setFontSize(19)
@@ -438,7 +438,6 @@
             this.allExams = [] // 题库
             this.list = [] // 选取的题目集合
             this.startTest()
-            this.$refs.share.show()
         },
         onUnload() {
             console.log('exam onUnload')
@@ -714,12 +713,9 @@
     }
 
     .share-canvas {
-        // position: absolute;
-        border: 1px solid red;
-        // top: -9999px;
-        // left: -9999px;
-        width: 341px;
-        height: 499px;
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
     }
 
 </style>
