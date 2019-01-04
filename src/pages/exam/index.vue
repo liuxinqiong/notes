@@ -30,7 +30,7 @@
                 <div class="share-img">
                     <i class="close" @click="closeShare"></i>
                     <div class="star-container">
-                        <star :count="startNo"></star>
+                        <star :count="starNo"></star>
                     </div>
                     <div class="result">完成<span class="num">{{currentIndex + 1}}</span>题</div>
                     <div class="user">
@@ -42,14 +42,14 @@
                         <img src="../../assets/img/code.jpg" alt="">
                     </div>
                 </div>
-                <button class="save-local" @click="saveLocal">保存到本地分享</button>
+                <button class="save-local" open-type="getUserInfo" @getuserinfo="onGotUserInfo">保存到本地分享</button>
             </div>
         </layer>
         <layer ref="result" :autoclose="false">
             <div class="result-layer">
                 <div class="result-img">
                     <div class="star-container">
-                        <star :count="startNo" mode="two"></star>
+                        <star :count="starNo" mode="two"></star>
                     </div>
                     <div class="result">完成<span class="num">{{currentIndex + 1}}</span>题</div>
                     <div class="btns">
@@ -60,6 +60,7 @@
                 </div>
             </div>
         </layer>
+        <canvas canvas-id="share" id="share" class="share-canvas"></canvas>
     </div>
 </template>
 <script>
@@ -91,7 +92,9 @@
         hideLoading,
         showSuccess,
         showToast,
-        generateExamList
+        generateExamList,
+        getNodeRect,
+        getImageInfo
     } from '@/utils'
     import {
         resetPageData
@@ -116,7 +119,7 @@
                 currentMode: 'normal',
                 currentIndex: 0,
                 rightCount: 0,
-                startNo: 0,
+                starNo: 0,
                 showCanvas: true // canvas 层级太高
             }
         },
@@ -214,18 +217,18 @@
             async finishTest() {
                 // 计算星星
                 const rate = this.rightCount / this.list.length
-                let startNo = 0
+                let starNo = 0
                 if (rate > 5 / 6 && rate <= 1) {
-                    startNo = 3
+                    starNo = 3
                 } else if (rate > 0.5 && rate <= 5 / 6) {
-                    startNo = 2
+                    starNo = 2
                 } else if (rate > 0 && rate <= 0.5) {
-                    startNo = 1
+                    starNo = 1
                 }
-                this.startNo = startNo
+                this.starNo = starNo
                 showLoading('正在保存')
                 try {
-                    await Promise.all([finishTestRecord(this.exam_test_id, startNo), addTotalStar(startNo)])
+                    await Promise.all([finishTestRecord(this.exam_test_id, starNo), addTotalStar(starNo)])
                     this.showCanvas = false
                     this.$refs.result.show()
                 } catch (e) {
@@ -266,8 +269,108 @@
                 this.currentIndex = 0
                 this.loadItem(0)
             },
-            saveLocal() {
-
+            async onGotUserInfo(e) {
+                if(e.mp.detail.userInfo) {
+                    showLoading('正在保存')
+                    const avatarInfo = await getImageInfo(e.mp.detail.userInfo.avatarUrl)
+                    this.saveLocal(avatarInfo.path, e.mp.detail.userInfo.nickName)
+                } else {
+                    showToast('您取消的授权')
+                }
+            },
+            async saveLocal(avatar, name) {
+                const roundRect = function(ctx, x, y, w, h, r) {
+                    var min_size = Math.min(w, h);
+                    if (r > min_size / 2) r = min_size / 2;
+                    // 开始绘制
+                    ctx.beginPath();
+                    ctx.moveTo(x + r, y);
+                    ctx.arcTo(x + w, y, x + w, y + h, r);
+                    ctx.arcTo(x + w, y + h, x, y + h, r);
+                    ctx.arcTo(x, y + h, x, y, r);
+                    ctx.arcTo(x, y, x + w, y, r);
+                    ctx.closePath();
+                }
+                const computeStar = function(starNo) {
+                    const fullStar = require('@/components/star/img/full1.png')
+                    const emptyStar = require('@/components/star/img/empty1.png')
+                    if(starNo === 0) {
+                        return [emptyStar, emptyStar, emptyStar]
+                    } else if(starNo === 1){
+                        return [fullStar, emptyStar, emptyStar]
+                    } else if(starNo === 2) {
+                        return [fullStar, fullStar, emptyStar]
+                    } else {
+                        return [fullStar, fullStar, fullStar]
+                    }
+                }
+                const drawStar = function(ctx, star1, star2, star3) {
+                    ctx.drawImage(star1, 68, 74, 67, 65)
+                    ctx.drawImage(star2, 150, 53, 56, 54)
+                    ctx.drawImage(star3, 224, 74, 67, 65)
+                }
+                try {
+                    const ctx = wx.createCanvasContext('share')
+                    // 处理背景图
+                    const shareBg = require('./img/share-bg.png')
+                    ctx.drawImage(shareBg, 0, 0, 341, 499)
+                    // 处理文字
+                    ctx.setFontSize(19)
+                    ctx.setFillStyle('#75AD82')
+                    ctx.fillText('完成', 121, 186)
+                    ctx.fillText('题', 184, 186)
+                    ctx.setFontSize(37)
+                    ctx.fillText(this.currentIndex + 1, 159, 186)
+                    ctx.setFontSize(12)
+                    ctx.setFillStyle('#878787')
+                    ctx.fillText('正在使用错题库记忆哦！', 106, 288)
+                    ctx.fillText('快来参加吧', 137, 310)
+                    // 处理星星
+                    drawStar(ctx, ...computeStar(this.starNo))
+                    // 处理用户信息
+                    ctx.save()
+                    ctx.beginPath()
+                    ctx.arc(139, 227, 12, 0, 2 * Math.PI)
+                    ctx.clip()
+                    ctx.drawImage(avatar, 127, 215, 24, 24)
+                    ctx.restore()
+                    ctx.setFontSize(12)
+                    ctx.setFillStyle('#75AD82')
+                    ctx.fillText(name, 158, 232)
+                    // 二维码
+                    roundRect(ctx, 118, 333, 104, 105, 7)
+                    ctx.setFillStyle('#fff')
+                    ctx.fill();
+                    const code = require('@/assets/img/code.jpg')
+                    ctx.drawImage(code, 124, 341, 93, 93)
+                    ctx.draw(false, () => {
+                        wx.canvasToTempFilePath({
+                            x: 0,
+                            y: 0,
+                            width: 341,
+                            height: 499,
+                            canvasId: 'share',
+                            success(res) {
+                                wx.saveImageToPhotosAlbum({
+                                    filePath: res.tempFilePath,
+                                    success() {
+                                        showSuccess('保存相册成功')
+                                    },
+                                    fail() {
+                                        hideLoading()
+                                    }
+                                })
+                            },
+                            fail(e) {
+                                console.log(e)
+                                hideLoading()
+                            }
+                        })
+                    })
+                } catch(e) {
+                    console.log(e)
+                    hideLoading()
+                }
             },
             async loadItem(index) {
                 showLoading('加载题目中')
@@ -335,6 +438,7 @@
             this.allExams = [] // 题库
             this.list = [] // 选取的题目集合
             this.startTest()
+            this.$refs.share.show()
         },
         onUnload() {
             console.log('exam onUnload')
@@ -607,6 +711,15 @@
             font-size: 28rpx;
             color: #fff;
         }
+    }
+
+    .share-canvas {
+        // position: absolute;
+        border: 1px solid red;
+        // top: -9999px;
+        // left: -9999px;
+        width: 341px;
+        height: 499px;
     }
 
 </style>
