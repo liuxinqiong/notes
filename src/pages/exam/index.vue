@@ -4,9 +4,16 @@
             <div class="exam">
                 <div class="tip" v-if="currentMode !== 'normal'">当前处于{{currentMode === 'eraser' ? '橡皮擦' : '涂抹'}}模式</div>
                 <div class="scroll">
-                    <div class="img-wrapper" id="exam">
-                        <canvas canvas-id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
+                    <div class="img-wrapper">
+                        <div id="exam" class="wrapper">
+                            <canvas canvas-id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                             @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
+                            <cover-view class="mask" v-if="!current.is_paint" ref="mask" :style="{top: maskTop + 'px'}">
+                                <button class="handler" @touchstart="handlerStart" @touchmove="handlerMove">
+                                    <cover-image class="img" src="./img/handler.png"></cover-image>
+                                </button>
+                            </cover-view>
+                        </div>
                         <p class="time">{{current.last_answer_time}}</p>
                     </div>
                     <div class="buttons">
@@ -120,6 +127,7 @@
                 currentIndex: 0,
                 rightCount: 0,
                 starNo: 0,
+                maskTop: 0,
                 showCanvas: true // canvas 层级太高
             }
         },
@@ -129,6 +137,33 @@
             star
         },
         methods: {
+            handlerStart(e) {
+                this.handlerTouch = {
+                    startX: e.touches[0].pageX,
+                    startY: e.touches[0].pageY,
+                    initiated: true
+                }
+            },
+            handlerMove(e) {
+                if(!this.handlerTouch.initiated) {
+                    return
+                }
+                const touch = e.touches[0]
+                const deltaX = touch.pageX - this.handlerTouch.startX
+                const deltaY = touch.pageY - this.handlerTouch.startY
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    return
+                }
+                const res = this.maskTop + deltaY
+                if(res >= 0 && res <= this.canvasWrapper.height - 10) {
+                    this.maskTop = res
+                }
+                this.handlerTouch = {
+                    startX: touch.pageX,
+                    startY: touch.pageY,
+                    initiated: true
+                }
+            },
             scrawl() {
                 this.currentMode = this.currentMode === 'scrawl' ? 'normal' : 'scrawl'
             },
@@ -374,6 +409,7 @@
             },
             async loadItem(index) {
                 showLoading('加载题目中')
+                this.maskTop = 0 // 重置为0
                 const [original_img_src, edited_img_src] = await Promise.all([
                     downloadFile(this.list[index].original_img_id),
                     downloadFile(this.list[index].edited_img_id)
@@ -475,6 +511,9 @@
         }
 
         .img-wrapper {
+            .wrapper {
+                position: relative;
+            }
             img {
                 width: 100%;
             }
@@ -483,7 +522,26 @@
                 width: 100%;
                 margin: auto;
             }
-
+            .mask {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+                background-color: rgb(244, 213, 121);
+                text-align: center;
+                .handler {
+                    display: inline-block;
+                    width: 51rpx;
+                    height: 95rpx;
+                    background-color: transparent;
+                    .img {
+                        width: 100%;
+                        height: 100%;
+                    }
+                    // background: url('./img/handler.png') no-repeat;
+                    // background-size: 100% 100%;
+                }
+            }
             .time {
                 color: #FFF;
                 font-size: 20rpx;
