@@ -4,12 +4,13 @@ import {
 } from '@/utils'
 
 export default class CanvasWrapper {
-    constructor(imageSrc, originalImageSrc, canvasId, width, height) {
+    constructor(imageSrc, originalImageSrc, canvasId, width, height, scale) {
         this.imageSrc = imageSrc
         this.originalImageSrc = originalImageSrc
         this.canvasId = canvasId
         this.width = width
         this.height = height
+        this.scale = scale
         this.executeActions = []
         this.stepActions = []
         this.backEnable = true
@@ -99,6 +100,8 @@ export default class CanvasWrapper {
         this.context.beginPath()
         this.context.arc(x, y, 10, 0, Math.PI * 2)
         this.context.clip()
+        // 即使局部绘制，依然很卡，待优化处理
+        // this.context.drawImage(this.originalImageSrc, (x - 10) * this.scale, (y - 10) * this.scale, 20 * this.scale, 20 * this.scale, x - 10, y - 10, 20, 20)
         this.context.drawImage(this.originalImageSrc, 0, 0, this.width, this.height)
         this.context.restore()
         this.context.draw(true, () => {
@@ -141,8 +144,8 @@ export default class CanvasWrapper {
 export async function createCanvasWrapper(imageSrc, canvasId, originalImageSrc) {
     try {
         originalImageSrc = originalImageSrc || imageSrc
-        const data = await Promise.all([getImageInfo(imageSrc), getNodeRect(`#${canvasId}`)])
-        const [imageInfo, canvasInfo] = data
+        const data = await Promise.all([getImageInfo(imageSrc), getNodeRect(`#${canvasId}`), getImageInfo(originalImageSrc)])
+        const [imageInfo, canvasInfo, originalImageInfo] = data
         const radio = imageInfo.width / imageInfo.height
         const res = wx.getSystemInfoSync()
         // 不要问我为啥630，手动算出来的，缺点：不够弹性，此为待优化处
@@ -153,7 +156,7 @@ export async function createCanvasWrapper(imageSrc, canvasId, originalImageSrc) 
             canvasHeight = maxHeight
             canvasWidth = maxHeight * radio
         }
-        return new CanvasWrapper(imageSrc, originalImageSrc, canvasId, canvasWidth, canvasHeight)
+        return new CanvasWrapper(imageSrc, originalImageSrc, canvasId, canvasWidth, canvasHeight, originalImageInfo.width / canvasWidth)
     } catch (e) {
         console.log(e)
     }
