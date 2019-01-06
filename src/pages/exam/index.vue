@@ -9,7 +9,7 @@
                             <canvas canvas-id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                             @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
                             <cover-view class="mask" v-if="!current.is_paint" ref="mask" :style="{top: maskTop + 'px'}">
-                                <button class="handler" @touchstart="handlerStart" @touchmove="handlerMove">
+                                <button class="handler" @touchstart.stop="handlerStart" @touchmove.stop="handlerMove">
                                     <cover-image class="img" src="./img/handler.png"></cover-image>
                                 </button>
                             </cover-view>
@@ -528,9 +528,11 @@
                 bottom: 0;
                 width: 100%;
                 background-color: rgb(244, 213, 121);
-                text-align: center;
                 .handler {
-                    display: inline-block;
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    margin: auto;
                     width: 51rpx;
                     height: 95rpx;
                     background-color: transparent;
