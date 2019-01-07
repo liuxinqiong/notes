@@ -21,6 +21,7 @@ export default class CanvasWrapper {
         this.erased = false
         this.touch = {}
         this.reDrawThrottle = debounce(this.reDraw, 200)
+        this.erasedPoint = {}
     }
 
     setTouch(x, y) {
@@ -28,11 +29,15 @@ export default class CanvasWrapper {
             startX: x,
             startY: y
         }
+        this.erasedPoint = {
+            x: x,
+            y: y
+        }
     }
 
     // 完成动作
     finishOneStep() {
-        if(this.stepActions.length) {
+        if (this.stepActions.length) {
             this.executeActions.push(this.stepActions)
             this.stepActions = []
         }
@@ -107,6 +112,37 @@ export default class CanvasWrapper {
         // this.context.drawImage(this.originalImageSrc, (x - 10) * this.scale, (y - 10) * this.scale, 20 * this.scale, 20 * this.scale, x - 10, y - 10, 20, 20)
         this.context.drawImage(this.originalImageSrc, 0, 0, this.width, this.height)
         this.context.restore()
+
+        let x1 = this.erasedPoint.x
+        let y1 = this.erasedPoint.y
+        let x2 = x
+        let y2 = y
+        let asin = 10 * Math.sin(Math.atan((y2 - y1) / (x2 - x1)));
+        let acos = 10 * Math.cos(Math.atan((y2 - y1) / (x2 - x1)));
+        let x3 = x1 + asin;
+        let y3 = y1 - acos;
+        let x4 = x1 - asin;
+        let y4 = y1 + acos;
+        let x5 = x2 + asin;
+        let y5 = y2 - acos;
+        let x6 = x2 - asin;
+        let y6 = y2 + acos;
+
+        this.context.save();
+        this.context.beginPath();
+        this.context.moveTo(x3, y3);
+        this.context.lineTo(x5, y5);
+        this.context.lineTo(x6, y6);
+        this.context.lineTo(x4, y4);
+        this.context.closePath();
+        this.context.clip();
+        this.context.drawImage(this.originalImageSrc, 0, 0, this.width, this.height)
+        this.context.restore();
+
+        this.erasedPoint = {
+            x: x2,
+            y: y2
+        }
         this.context.draw(true, () => {
             this.touchmoveEnable = true
             this.reDrawThrottle()
@@ -175,7 +211,7 @@ export async function createCanvasWrapper(imageSrc, canvasId, originalImageSrc) 
         const maxHeight = res.windowHeight - (630 * res.windowWidth / 750)
         let canvasWidth = canvasInfo.width
         let canvasHeight = canvasWidth / radio
-        if(maxHeight < canvasHeight) {
+        if (maxHeight < canvasHeight) {
             canvasHeight = maxHeight
             canvasWidth = maxHeight * radio
         }

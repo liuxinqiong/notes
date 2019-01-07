@@ -99,6 +99,14 @@
                 this.nextData = true;
                 this.isLock = false;
                 var getList = await this.loadData(); //加载数据
+                if (getList == null || getList.length == 0) {
+                    hideLoading();
+                    wx.showToast({
+                        title: "题库中空空如也，快去录题吧",
+                        icon: "none"
+                    });
+                    return;
+                }
                 this.sortResponseList(getList);
                 this.$nextTick(function () {
                     hideLoading();
