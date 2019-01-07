@@ -410,10 +410,15 @@
             async loadItem(index) {
                 showLoading('加载题目中')
                 this.maskTop = 0 // 重置为0
-                const [original_img_src, edited_img_src] = await Promise.all([
-                    downloadFile(this.list[index].original_img_id),
-                    downloadFile(this.list[index].edited_img_id)
-                ])
+                let original_img_src, edited_img_src
+                if(this.list[index].original_img_id === this.list[index].edited_img_id) {
+                    original_img_src = edited_img_src = await downloadFile(this.list[index].original_img_id)
+                } else {
+                    [original_img_src, edited_img_src] = await Promise.all([
+                        downloadFile(this.list[index].original_img_id),
+                        downloadFile(this.list[index].edited_img_id)
+                    ])
+                }
                 this.current = {
                     ...this.list[index],
                     original_img_src,
