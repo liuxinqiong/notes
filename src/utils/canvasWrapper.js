@@ -22,18 +22,13 @@ export default class CanvasWrapper {
         this.context = wx.createCanvasContext(canvasId)
         this.erased = false
         this.touch = {}
-        this.reDrawThrottle = debounce(this.reDraw, 200)
-        this.erasedPoint = {}
+        this.reDrawDebounce = debounce(this.reDraw, 200)
     }
 
     setTouch(x, y) {
         this.touch = {
             startX: x,
             startY: y
-        }
-        this.erasedPoint = {
-            x: x,
-            y: y
         }
     }
 
@@ -111,17 +106,9 @@ export default class CanvasWrapper {
         }
         this.erased = true
         this.touchmoveEnable = false
-        this.context.save()
-        this.context.beginPath()
-        this.context.arc(x, y, 10, 0, Math.PI * 2)
-        this.context.clip()
-        // 即使局部绘制，依然很卡，待优化处理
-        // this.context.drawImage(this.originalImageSrc, (x - 10) * this.scale, (y - 10) * this.scale, 20 * this.scale, 20 * this.scale, x - 10, y - 10, 20, 20)
-        this.drawImage(false, true)
-        this.context.restore()
 
-        let x1 = this.erasedPoint.x
-        let y1 = this.erasedPoint.y
+        let x1 = this.touch.startX
+        let y1 = this.touch.startY
         let x2 = x
         let y2 = y
         let asin = 10 * Math.sin(Math.atan((y2 - y1) / (x2 - x1)));
@@ -143,13 +130,9 @@ export default class CanvasWrapper {
         this.context.lineTo(x4, y4);
         this.context.closePath();
         this.context.clip();
-        this.context.drawImage(this.originalImageSrc, 0, 0, this.width, this.height)
+        this.drawImage(false, true)
         this.context.restore();
-
-        this.erasedPoint = {
-            x: x2,
-            y: y2
-        }
+        this.setTouch(x, y)
         this.context.draw(true, () => {
             this.touchmoveEnable = true
             this.reDrawDebounce()
