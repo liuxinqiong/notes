@@ -129,8 +129,9 @@ export function arrayRemove(array, func) {
 
 // 本意是修复 android canvas 不能过大的 bug，如今顺便用来控制图片的质量
 export function fixBugInAndroid(source) {
-    const isAndroid = wx.getSystemInfoSync().platform === 'android'
-    const safe = isAndroid ? 1200 : 2400
+    // const isAndroid = wx.getSystemInfoSync().platform === 'android'
+    // const safe = isAndroid ? 1200 : 2400
+    const safe = 1200
     const ratio = source.width / source.height;
     if (ratio >= 1 && source.width > safe) {
         source.width = safe
