@@ -176,6 +176,31 @@ export function getNodeRect(selector) {
     })
 }
 
+export function debounce(func, delay) {
+    let timer
+
+    return function (...args) {
+        if (timer) {
+            clearTimeout(timer)
+        }
+        timer = setTimeout(() => {
+            func.apply(this, args)
+        }, delay)
+    }
+}
+
+export function throttle(func, delay) {
+    let timer
+    return function(...args) {
+        if(!timer) {
+            timer = setTimeout(() => {
+                timer = null;
+                func.apply(this, args)
+            }, delay)
+        }
+    }
+}
+
 export default {
     formatNumber,
     formatTime

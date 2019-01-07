@@ -8,9 +8,9 @@
                         <div id="exam" class="wrapper">
                             <canvas canvas-id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                             @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
-                            <cover-view class="mask" v-if="!current.is_paint" ref="mask" :style="{top: maskTop + 'px'}">
+                            <cover-view class="mask" v-if="!current.is_paint&&showCanvas" :style="{top: maskTop + 'px'}">
                                 <button class="handler" @touchstart.stop="handlerStart" @touchmove.stop="handlerMove">
-                                    <cover-image class="img" src="./img/handler.png"></cover-image>
+                                    <cover-image class="img" src="../../static/handler.png"></cover-image>
                                 </button>
                             </cover-view>
                         </div>
@@ -540,8 +540,6 @@
                         width: 100%;
                         height: 100%;
                     }
-                    // background: url('./img/handler.png') no-repeat;
-                    // background-size: 100% 100%;
                 }
             }
             .time {

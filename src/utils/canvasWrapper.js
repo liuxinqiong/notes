@@ -1,6 +1,8 @@
 import {
     getImageInfo,
-    getNodeRect
+    getNodeRect,
+    throttle,
+    debounce
 } from '@/utils'
 
 export default class CanvasWrapper {
@@ -18,6 +20,7 @@ export default class CanvasWrapper {
         this.context = wx.createCanvasContext(canvasId)
         this.erased = false
         this.touch = {}
+        this.reDrawThrottle = debounce(this.reDraw, 200)
     }
 
     setTouch(x, y) {
@@ -106,7 +109,27 @@ export default class CanvasWrapper {
         this.context.restore()
         this.context.draw(true, () => {
             this.touchmoveEnable = true
+            this.reDrawThrottle()
         })
+    }
+
+    reDraw() {
+        wx.canvasToTempFilePath({
+            x: 0,
+            y: 0,
+            width: this.width,
+            height: this.height,
+            quality: 1,
+            canvasId: this.canvasId,
+            success: res => {
+                console.log('reDraw')
+                this.context.drawImage(res.tempFilePath, 0, 0, this.width, this.height)
+                this.context.draw()
+            },
+            fail: e => {
+                console.log(e)
+            }
+        });
     }
 
     // 撤销
