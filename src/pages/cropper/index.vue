@@ -190,7 +190,7 @@
                         height: canvasH,
                         destWidth: canvasW,
                         destHeight: canvasH,
-                        quality: 0.8,
+                        quality: 1,
                         canvasId: "myCanvas",
                         success: function (res) {
                             hideLoading();

@@ -63,13 +63,12 @@
                 let original_img_id, edited_img_id
                 try {
                     if (isPaint) {
-                        const path = await this.canvasWrapper.saveToTempFilePath()
-                        const result = await Promise.all([uploadExamImg(this.canvasWrapper.imageSrc), uploadExamImg(
-                            path)])
+                        const edited_path = await this.canvasWrapper.saveToTempFilePath()
+                        const result = await Promise.all([uploadExamImg(this.original_path), uploadExamImg(edited_path)])
                         original_img_id = result[0]
                         edited_img_id = result[1]
                     } else {
-                        original_img_id = edited_img_id = await uploadExamImg(this.src)
+                        original_img_id = edited_img_id = await uploadExamImg(this.original_path)
                     }
                     var res_id = await insertExamData({
                         original_img_id,
@@ -112,6 +111,7 @@
         mounted() {
             console.log('add-exam mounted')
             this.src = this.$root.$mp.query.src
+            this.original_path = this.src
             this.init()
         }
     }

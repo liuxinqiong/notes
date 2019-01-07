@@ -13,6 +13,8 @@ export default class CanvasWrapper {
         this.width = width
         this.height = height
         this.scale = scale
+        this.destWidth = this.width * this.scale
+        this.destHeight = this.destWidth * this.height / this.width
         this.executeActions = []
         this.stepActions = []
         this.backEnable = true
@@ -43,10 +45,15 @@ export default class CanvasWrapper {
         }
     }
 
-    drawImage(immediate, useOrigin) {
+    drawImage(immediate, useOrigin, callback) {
+        if (typeof useOrigin === 'function') {
+            callback = useOrigin
+        }
         const src = useOrigin ? this.originalImageSrc : this.imageSrc
         this.context.drawImage(src, 0, 0, this.width, this.height)
-        immediate && this.context.draw(false)
+        immediate && this.context.draw(false, () => {
+            callback && callback()
+        })
     }
 
     isPaint() {
@@ -110,7 +117,7 @@ export default class CanvasWrapper {
         this.context.clip()
         // 即使局部绘制，依然很卡，待优化处理
         // this.context.drawImage(this.originalImageSrc, (x - 10) * this.scale, (y - 10) * this.scale, 20 * this.scale, 20 * this.scale, x - 10, y - 10, 20, 20)
-        this.context.drawImage(this.originalImageSrc, 0, 0, this.width, this.height)
+        this.drawImage(false, true)
         this.context.restore()
 
         let x1 = this.erasedPoint.x
@@ -145,27 +152,18 @@ export default class CanvasWrapper {
         }
         this.context.draw(true, () => {
             this.touchmoveEnable = true
-            this.reDrawThrottle()
+            this.reDrawDebounce()
         })
     }
 
-    reDraw() {
-        wx.canvasToTempFilePath({
-            x: 0,
-            y: 0,
-            width: this.width,
-            height: this.height,
-            quality: 1,
-            canvasId: this.canvasId,
-            success: res => {
-                console.log('reDraw')
-                this.context.drawImage(res.tempFilePath, 0, 0, this.width, this.height)
-                this.context.draw()
-            },
-            fail: e => {
-                console.log(e)
-            }
-        });
+    async reDraw() {
+        this.touchmoveEnable = false
+        const tempFilePath = await this.saveToTempFilePath()
+        console.log('reDraw')
+        this.context.drawImage(tempFilePath, 0, 0, this.width, this.height)
+        this.context.draw(false, () => {
+            this.touchmoveEnable = true
+        })
     }
 
     // 撤销
