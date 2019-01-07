@@ -107,6 +107,13 @@ export default class CanvasWrapper {
         this.erased = true
         this.touchmoveEnable = false
 
+        this.context.save()
+        this.context.beginPath()
+        this.context.arc(x, y, 10, 0, Math.PI * 2)
+        this.context.clip()
+        this.drawImage(false, true)
+        this.context.restore()
+
         let x1 = this.touch.startX
         let y1 = this.touch.startY
         let x2 = x
