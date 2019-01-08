@@ -10,17 +10,24 @@
                             <div class="wx-cropper-dashed-h"></div>
                             <div class="wx-cropper-dashed-v"></div>
                             <div class="wx-cropper-line-t" data-drag="top" @touchstart.stop="dragStart" @touchmove.stop="dragMove"></div>
-                            <div class="wx-cropper-line-r" data-drag="right" @touchstart.stop="dragStart" @touchmove.stop="dragMove"></div>
-                            <div class="wx-cropper-line-b" data-drag="bottom" @touchstart.stop="dragStart" @touchmove.stop="dragMove"></div>
-                            <div class="wx-cropper-line-l" data-drag="left" @touchstart.stop="dragStart" @touchmove.stop="dragMove"></div>
-                            <div class="wx-cropper-point point-t" data-drag="top" @touchstart.stop="dragStart" @touchmove.stop="dragMove"></div>
+                            <div class="wx-cropper-line-r" data-drag="right" @touchstart.stop="dragStart"
+                                @touchmove.stop="dragMove"></div>
+                            <div class="wx-cropper-line-b" data-drag="bottom" @touchstart.stop="dragStart"
+                                @touchmove.stop="dragMove"></div>
+                            <div class="wx-cropper-line-l" data-drag="left" @touchstart.stop="dragStart"
+                                @touchmove.stop="dragMove"></div>
+                            <div class="wx-cropper-point point-t" data-drag="top" @touchstart.stop="dragStart"
+                                @touchmove.stop="dragMove"></div>
                             <div class="wx-cropper-point point-tr" data-drag="topTight"></div>
-                            <div class="wx-cropper-point point-r" data-drag="right" @touchstart.stop="dragStart" @touchmove.stop="dragMove"></div>
+                            <div class="wx-cropper-point point-r" data-drag="right" @touchstart.stop="dragStart"
+                                @touchmove.stop="dragMove"></div>
                             <div class="wx-cropper-point point-rb" data-drag="rightBottom" @touchstart.stop="dragStart"
                                 @touchmove.stop="dragMove"></div>
-                            <div class="wx-cropper-point point-b" data-drag="bottom" @touchstart.stop="dragStart" @touchmove.stop="dragMove"></div>
+                            <div class="wx-cropper-point point-b" data-drag="bottom" @touchstart.stop="dragStart"
+                                @touchmove.stop="dragMove"></div>
                             <div class="wx-cropper-point point-bl" data-drag="bottomLeft"></div>
-                            <div class="wx-cropper-point point-l" data-drag="left" @touchstart.stop="dragStart" @touchmove.stop="dragMove"></div>
+                            <div class="wx-cropper-point point-l" data-drag="left" @touchstart.stop="dragStart"
+                                @touchmove.stop="dragMove"></div>
                             <div class="wx-cropper-point point-lt" data-drag="leftTop"></div>
                         </div>
                     </div>
@@ -50,7 +57,9 @@
         showModal,
         fixBugInAndroid
     } from "@/utils";
-    import { resetPageData } from '@/utils/mixins'
+    import {
+        resetPageData
+    } from '@/utils/mixins'
     let SCREEN_WIDTH = 750;
     let PAGE_X, // 手按下的x位置
         PAGE_Y, // 手按下y的位置
@@ -190,11 +199,12 @@
                         height: canvasH,
                         destWidth: canvasW,
                         destHeight: canvasH,
-                        quality: 1,
+                        quality: 0.7,
+                        fileType: "jpg",
                         canvasId: "myCanvas",
                         success: function (res) {
                             hideLoading();
-                            if(sure) {
+                            if (sure) {
                                 // 跳转到增加页
                                 wx.redirectTo({
                                     url: `/pages/add-exam/main?src=${res.tempFilePath}`
@@ -312,7 +322,7 @@
         },
         mounted() {
             const src = this.$root.$mp.query.src
-            if(!src) {
+            if (!src) {
                 showModal('提示', '缺少源图片')
                 return
             }

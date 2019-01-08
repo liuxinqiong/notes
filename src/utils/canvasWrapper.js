@@ -45,7 +45,10 @@ export default class CanvasWrapper {
             callback = useOrigin
         }
         const src = useOrigin ? this.originalImageSrc : this.imageSrc
-        this.context.drawImage(src, 0, 0, this.width, this.height)
+        //this.context.drawImage(src, 0, 0, this.width, this.height)
+        this.context.scale(1 / this.scale, 1 / this.scale) //设置缩放比例
+        this.context.drawImage(src, 0, 0, this.width * this.scale, this.height * this.scale) //获取原图真实高度
+        this.context.scale(this.scale, this.scale); //重置scale
         immediate && this.context.draw(false, () => {
             callback && callback()
         })
@@ -63,7 +66,10 @@ export default class CanvasWrapper {
                 y: 0,
                 width: this.width,
                 height: this.height,
-                quality: 1,
+                destWidth: this.width * this.scale,
+                destHeight: this.height * this.scale,
+                quality: 0.8,
+                fileType: "jpg",
                 canvasId: this.canvasId,
                 success: res => {
                     resolve(res.tempFilePath)
@@ -150,7 +156,10 @@ export default class CanvasWrapper {
         this.touchmoveEnable = false
         const tempFilePath = await this.saveToTempFilePath()
         console.log('reDraw')
-        this.context.drawImage(tempFilePath, 0, 0, this.width, this.height)
+        this.context.scale(1 / this.scale, 1 / this.scale) //设置缩放比例
+        this.context.drawImage(tempFilePath, 0, 0, this.width * this.scale, this.height * this.scale) //获取原图真实高度
+        this.context.scale(this.scale, this.scale); //重置scale
+        //this.context.drawImage(tempFilePath, 0, 0, this.width, this.height)
         this.context.draw(false, () => {
             this.touchmoveEnable = true
         })
@@ -194,6 +203,7 @@ export async function createCanvasWrapper(imageSrc, canvasId, originalImageSrc) 
         const data = await Promise.all([getImageInfo(imageSrc), getNodeRect(`#${canvasId}`), getImageInfo(originalImageSrc)])
         const [imageInfo, canvasInfo, originalImageInfo] = data
         const radio = imageInfo.width / imageInfo.height
+        console.log("压缩过图片大小==> w:" + originalImageInfo.width + " h:" + originalImageInfo.height + " area:" + originalImageInfo.width * originalImageInfo.height)
         const res = wx.getSystemInfoSync()
         // 不要问我为啥630，手动算出来的，缺点：不够弹性，此为待优化处
         const maxHeight = res.windowHeight - (630 * res.windowWidth / 750)

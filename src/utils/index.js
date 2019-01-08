@@ -85,6 +85,12 @@ export function getImageInfo(imageSrc) {
         wx.getImageInfo({
             src: imageSrc,
             success: function (res) {
+                if (res.width * res.height > 300000) { //像素大于30万 压缩图片在30w像素以内
+                    console.log("计算压缩后的像素");
+                    let scale = Math.sqrt(300000 / (res.width * res.height))
+                    res.width = res.width * scale
+                    res.height = res.height * scale
+                }
                 resolve(res)
             },
             fail: function (err) {
@@ -145,11 +151,11 @@ export function fixBugInAndroid(source) {
 export function generateExamList(source, index, howMany) {
     const length = source.length
     // 全部够不够
-    if(length < howMany) {
+    if (length < howMany) {
         return source.slice(0)
     }
     // 说明完全不够或者部分不够，则取余下全部
-    if(index + howMany > length) {
+    if (index + howMany > length) {
         const part = source.slice(index)
         const rest = howMany - part.length
         return part.concat(source.slice(0, rest))
@@ -171,7 +177,7 @@ export async function getUserOpenId() {
 
 export function getNodeRect(selector) {
     return new Promise((resolve) => {
-        wx.createSelectorQuery().select(selector).boundingClientRect(function(rect) {
+        wx.createSelectorQuery().select(selector).boundingClientRect(function (rect) {
             resolve(rect)
         }).exec()
     })
@@ -192,8 +198,8 @@ export function debounce(func, delay) {
 
 export function throttle(func, delay) {
     let timer
-    return function(...args) {
-        if(!timer) {
+    return function (...args) {
+        if (!timer) {
             timer = setTimeout(() => {
                 timer = null;
                 func.apply(this, args)
