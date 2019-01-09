@@ -115,7 +115,7 @@
             async loadImage(src) {
                 showLoading("图片加载中");
                 var res = await getImageInfo(src);
-                updateImageInfo(res, 250000) // 20w像素点
+                updateImageInfo(res, 1200, 'MAX_BORDER') //
                 DRAW_IMAGE_W = IMG_REAL_W = res.width;
                 IMG_REAL_H = res.height;
                 IMG_RATIO = IMG_REAL_W / IMG_REAL_H;
@@ -191,14 +191,25 @@
                         (this.cropperH - this.cutT - this.cutB) / this.cropperH * IMG_REAL_H;
                     var canvasL = this.cutL / this.cropperW * IMG_REAL_W;
                     var canvasT = this.cutT / this.cropperH * IMG_REAL_H;
+
+                    var exportW = canvasW;
+                    var exportH = canvasH;
+
+                    const total = canvasW * canvasH
+                    if (total > 250000) { //根据裁剪的位置压缩 不提前压缩
+                        console.log('裁剪位置需要压缩');
+                        let scale = Math.sqrt(250000 / total)
+                        exportW = canvasW * scale
+                        exportH = canvasH * scale
+                    }
                     // 生成图片
                     wx.canvasToTempFilePath({
                         x: canvasL,
                         y: canvasT,
                         width: canvasW,
                         height: canvasH,
-                        destWidth: canvasW,
-                        destHeight: canvasH,
+                        destWidth: exportW,
+                        destHeight: exportH,
                         quality: 1,
                         fileType: "jpg",
                         canvasId: "myCanvas",
