@@ -65,7 +65,8 @@
                 try {
                     if (isPaint) {
                         const edited_path = await this.canvasWrapper.saveToTempFilePath()
-                        const result = await Promise.all([uploadExamImg(this.original_path), uploadExamImg(edited_path)])
+                        const result = await Promise.all([uploadExamImg(this.original_path), uploadExamImg(
+                            edited_path)])
                         original_img_id = result[0]
                         edited_img_id = result[1]
                     } else {
@@ -80,7 +81,7 @@
                     })
                     showSuccess('保存成功')
                     setTimeout(() => {
-                        wx.redirectTo({
+                        wx.reLaunch({
                             url: `/pages/exam-list/main`
                         });
                     }, 1500)

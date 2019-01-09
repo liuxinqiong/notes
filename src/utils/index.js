@@ -1,5 +1,6 @@
 import config, {
-    RES_CODE
+    RES_CODE,
+    COMPRESS_SETTING
 } from '@/config'
 
 function formatNumber(n) {
@@ -146,6 +147,33 @@ export function updateImageInfo(source, value, type = 'MAX_SIZE') {
             source.width = source.height * ratio
         }
     }
+}
+
+export function getImgCompressInfo(width, height) {
+    var exportInfo = {}
+    exportInfo.width = width;
+    exportInfo.height = height;
+    const systemInfo = wx.getSystemInfoSync();
+
+    const total = width * height
+    let maxSize = COMPRESS_SETTING.ANDROID_MAX_SIZE
+    exportInfo.quality = 1
+    if ((systemInfo.system.indexOf('IOS') >= 0 || systemInfo.system.indexOf('iOS') >= 0)) { //IOS
+        maxSize = COMPRESS_SETTING.IOS_MAX_SIZE
+    } else { //安卓 像素不能降低太多
+        if (total > COMPRESS_SETTING.ANDROID_NO_COMPRESS_SIZE) {
+            let tempTotal = total > maxSize ? maxSize : total
+            //质量从设定值起 像素越大越低
+            exportInfo.quality = COMPRESS_SETTING.ANDROID_START_COMPRESS_RATE - (tempTotal - COMPRESS_SETTING.ANDROID_NO_COMPRESS_SIZE) * COMPRESS_SETTING.ANDROID_COMPRESS_CHANGE_RATE
+        }
+    }
+    if (total > maxSize) { //根据裁剪的位置压缩 不提前压缩 只压缩IOS
+        console.log('裁剪位置需要压缩');
+        let scale = Math.sqrt(maxSize / total)
+        exportInfo.width = width * scale
+        exportInfo.height = height * scale
+    }
+    return exportInfo
 }
 
 export async function computeCanvasInfo(imageSrc, container) {

@@ -155,8 +155,8 @@
             sortResponseList(getList) {
                 for (let index = 0; index < getList.length; index++) {
                     const element = getList[index];
-                    if (this.leftListHeight > this.rightListHeight + 80) {
-                        //+80 防止因为左边高一点点 就换到右边
+                    if (this.leftListHeight > this.rightListHeight + 40) {
+                        //+40 防止因为左边高一点点 就换到右边
                         this.examList.push(element);
                         this.rightListHeight =
                             this.examOtherHeight + element.img_height + this.rightListHeight;

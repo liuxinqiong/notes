@@ -55,7 +55,8 @@
         hideLoading,
         previewImage,
         showModal,
-        updateImageInfo
+        updateImageInfo,
+        getImgCompressInfo
     } from "@/utils";
     import {
         resetPageData
@@ -192,25 +193,16 @@
                     var canvasL = this.cutL / this.cropperW * IMG_REAL_W;
                     var canvasT = this.cutT / this.cropperH * IMG_REAL_H;
 
-                    var exportW = canvasW;
-                    var exportH = canvasH;
-
-                    const total = canvasW * canvasH
-                    if (total > 250000) { //根据裁剪的位置压缩 不提前压缩
-                        console.log('裁剪位置需要压缩');
-                        let scale = Math.sqrt(250000 / total)
-                        exportW = canvasW * scale
-                        exportH = canvasH * scale
-                    }
+                    const exportInfo = getImgCompressInfo(canvasW, canvasH); //生成导出图片质量
                     // 生成图片
                     wx.canvasToTempFilePath({
                         x: canvasL,
                         y: canvasT,
                         width: canvasW,
                         height: canvasH,
-                        destWidth: exportW,
-                        destHeight: exportH,
-                        quality: 1,
+                        destWidth: exportInfo.width,
+                        destHeight: exportInfo.height,
+                        quality: exportInfo.quality,
                         fileType: "jpg",
                         canvasId: "myCanvas",
                         success: function (res) {
