@@ -6,6 +6,7 @@
                 <div class="scroll">
                     <div class="img-wrapper">
                         <div id="exam" class="wrapper">
+                            <img :src="current.original_img_id" :style="{height: canvasHeight, width: canvasWidth}" alt="">
                             <canvas canvas-id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                             @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
                             <cover-view class="mask" v-if="!current.is_paint&&showCanvas" :style="{top: maskTop + 'px'}">
@@ -85,9 +86,7 @@
         finishTestRecord,
         addTotalStar
     } from '@/utils/wxDB'
-    import {
-        createCanvasWrapper
-    } from '@/utils/canvasWrapper'
+    import CanvasWrapper from '@/utils/canvasWrapper'
     import {
         downloadFile,
         getTempFileUrl,
@@ -185,8 +184,8 @@
                 const res = await updateEditedImg(this.current._id, newId)
                 if (res) {
                     showSuccess('保存成功')
-                    // 有可能共享数据
-                    if (this.current.edited_img_id !== this.current.original_img_id) {
+                    // 旧图片清理
+                    if (this.current.edited_img_id) {
                         await deleteFile([this.current.edited_img_id])
                         console.log('旧图片清理成功')
                     }
@@ -410,23 +409,18 @@
             async loadItem(index) {
                 showLoading('加载题目中')
                 this.maskTop = 0 // 重置为0
-                let original_img_src, edited_img_src
-                if(this.list[index].original_img_id === this.list[index].edited_img_id) {
-                    original_img_src = edited_img_src = await downloadFile(this.list[index].original_img_id)
-                } else {
-                    [original_img_src, edited_img_src] = await Promise.all([
-                        downloadFile(this.list[index].original_img_id),
-                        downloadFile(this.list[index].edited_img_id)
-                    ])
+                let edited_img_src
+                // 涂鸦过，下载遮盖
+                if(this.list[index].edited_img_id) {
+                    edited_img_src = await downloadFile(this.list[index].edited_img_id)
                 }
                 this.current = {
                     ...this.list[index],
-                    original_img_src,
                     edited_img_src,
                     last_answer_time: this.list[index].last_answer_time.format('yyyy.MM.dd hh:mm')
                 }
                 console.log(this.current._id)
-                this.canvasWrapper = await createCanvasWrapper(edited_img_src, 'exam', original_img_src)
+                this.canvasWrapper = new CanvasWrapper('exam', this.current.img_width, this.current.img_height, edited_img_src)
                 this.canvasHeight = this.canvasWrapper.height + 'px'
                 this.canvasWidth = this.canvasWrapper.width + 'px'
                 this.canvasWrapper.drawImage(true)
@@ -520,7 +514,10 @@
                 position: relative;
             }
             img {
-                width: 100%;
+                position: absolute;
+                left: 0;
+                right: 0;
+                margin: auto;
             }
 
             canvas {

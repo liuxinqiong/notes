@@ -55,7 +55,7 @@
         hideLoading,
         previewImage,
         showModal,
-        fixBugInAndroid
+        updateImageInfo
     } from "@/utils";
     import {
         resetPageData
@@ -115,7 +115,7 @@
             async loadImage(src) {
                 showLoading("图片加载中");
                 var res = await getImageInfo(src);
-                fixBugInAndroid(res)
+                updateImageInfo(res, 300000) // 30w像素点
                 DRAW_IMAGE_W = IMG_REAL_W = res.width;
                 IMG_REAL_H = res.height;
                 IMG_RATIO = IMG_REAL_W / IMG_REAL_H;
@@ -199,7 +199,7 @@
                         height: canvasH,
                         destWidth: canvasW,
                         destHeight: canvasH,
-                        quality: 0.7,
+                        quality: 1,
                         fileType: "jpg",
                         canvasId: "myCanvas",
                         success: function (res) {

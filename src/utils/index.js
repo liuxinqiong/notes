@@ -85,12 +85,6 @@ export function getImageInfo(imageSrc) {
         wx.getImageInfo({
             src: imageSrc,
             success: function (res) {
-                if (res.width * res.height > 300000) { //像素大于30万 压缩图片在30w像素以内
-                    console.log("计算压缩后的像素");
-                    let scale = Math.sqrt(300000 / (res.width * res.height))
-                    res.width = res.width * scale
-                    res.height = res.height * scale
-                }
                 resolve(res)
             },
             fail: function (err) {
@@ -133,18 +127,43 @@ export function arrayRemove(array, func) {
 
 }
 
-// 本意是修复 android canvas 不能过大的 bug，如今顺便用来控制图片的质量
-export function fixBugInAndroid(source) {
-    // const isAndroid = wx.getSystemInfoSync().platform === 'android'
-    // const safe = isAndroid ? 1200 : 2400
-    const safe = 1200
-    const ratio = source.width / source.height;
-    if (ratio >= 1 && source.width > safe) {
-        source.width = safe
-        source.height = source.width / ratio
-    } else if (ratio < 1 && source.height > safe) {
-        source.height = safe
-        source.width = source.height * ratio
+// 备注：android canvas 设置过大会导致程序秒退，安全值 safe 大约 1200
+export function updateImageInfo(source, value, type = 'MAX_SIZE') {
+    if(type == 'MAX_SIZE') {
+        const total = source.width * source.height
+        if (total > value) {
+            let scale = Math.sqrt(value / total)
+            source.width = source.width * scale
+            source.height = source.height * scale
+        }
+    } else if(type === 'MAX_BORDER'){
+        const ratio = source.width / source.height;
+        if (ratio >= 1 && source.width > value) {
+            source.width = value
+            source.height = source.width / ratio
+        } else if (ratio < 1 && source.height > value) {
+            source.height = value
+            source.width = source.height * ratio
+        }
+    }
+}
+
+export async function computeCanvasInfo(imageSrc, container) {
+    const data = await Promise.all([getImageInfo(imageSrc), getNodeRect(container)])
+    const [imageInfo, containerInfo] = data
+    const radio = imageInfo.width / imageInfo.height
+    const res = wx.getSystemInfoSync()
+    // 不要问我为啥630，手动算出来的，缺点：不够弹性，此为待优化处
+    const maxHeight = res.windowHeight - (630 * res.windowWidth / 750)
+    let canvasWidth = containerInfo.width
+    let canvasHeight = canvasWidth / radio
+    if (maxHeight < canvasHeight) {
+        canvasHeight = maxHeight
+        canvasWidth = maxHeight * radio
+    }
+    return {
+        canvasWidth,
+        canvasHeight
     }
 }
 

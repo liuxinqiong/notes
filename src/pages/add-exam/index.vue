@@ -3,6 +3,7 @@
         <div class="add-exam">
             <div class="tip" v-if="isClear">当前处于橡皮擦模式</div>
             <div class="img-wrapper" id="addExam">
+                <img :src="src" :style="{height: canvasHeight, width: canvasWidth}" alt="">
                 <canvas canvas-id="addExam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                     @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend"></canvas>
             </div>
@@ -22,9 +23,7 @@
     import {
         insertExamData
     } from '@/utils/wxDB'
-    import {
-        createCanvasWrapper
-    } from '@/utils/canvasWrapper'
+    import CanvasWrapper from '@/utils/canvasWrapper'
     import {
         resetPageData
     } from '@/utils/mixins'
@@ -32,7 +31,8 @@
         showLoading,
         hideLoading,
         showSuccess,
-        showToast
+        showToast,
+        computeCanvasInfo
     } from '@/utils'
     const canvasId = 'addExam'
     export default {
@@ -41,7 +41,8 @@
             return {
                 canvasHeight: '150px',
                 canvasWidth: '100%',
-                isClear: false
+                isClear: false,
+                src: ''
             }
         },
         components: {
@@ -68,12 +69,12 @@
                         original_img_id = result[0]
                         edited_img_id = result[1]
                     } else {
-                        original_img_id = edited_img_id = await uploadExamImg(this.original_path)
+                        original_img_id = await uploadExamImg(this.original_path)
                     }
                     var res_id = await insertExamData({
                         original_img_id,
                         edited_img_id,
-                        is_paint: this.canvasWrapper.isPaint(),
+                        is_paint: isPaint,
                         img_width: this.canvasWrapper.width,
                         img_height: this.canvasWrapper.height
                     })
@@ -88,10 +89,10 @@
                 }
             },
             async init() {
-                this.canvasWrapper = await createCanvasWrapper(this.src, canvasId)
+                const canvasInfo = await computeCanvasInfo(this.src, `#${canvasId}`)
+                this.canvasWrapper = new CanvasWrapper(canvasId, canvasInfo.canvasWidth, canvasInfo.canvasHeight)
                 this.canvasHeight = this.canvasWrapper.height + 'px'
                 this.canvasWidth = this.canvasWrapper.width + 'px'
-                this.canvasWrapper.drawImage(true)
             },
             touchstart(e) {
                 this.canvasWrapper.setTouch(e.touches[0].x, e.touches[0].y)
@@ -140,8 +141,14 @@
         .img-wrapper {
             position: relative;
 
+            img {
+                position: absolute;
+                left: 0;
+                right: 0;
+                margin: auto;
+            }
+
             canvas {
-                width: 100%;
                 margin: auto;
             }
         }
