@@ -106,7 +106,7 @@ export function takePhoto() {
     return new Promise((resolve, reject) => {
         wx.chooseImage({
             count: 1,
-            sizeType: ['compressed'],
+            sizeType: ['original'],
             sourceType: ['camera'], // album/camera
             success: function (res) {
                 resolve(res.tempFilePaths[0])
@@ -129,14 +129,14 @@ export function arrayRemove(array, func) {
 
 // 备注：android canvas 设置过大会导致程序秒退，安全值 safe 大约 1200
 export function updateImageInfo(source, value, type = 'MAX_SIZE') {
-    if(type == 'MAX_SIZE') {
+    if (type == 'MAX_SIZE') {
         const total = source.width * source.height
         if (total > value) {
             let scale = Math.sqrt(value / total)
             source.width = source.width * scale
             source.height = source.height * scale
         }
-    } else if(type === 'MAX_BORDER'){
+    } else if (type === 'MAX_BORDER') {
         const ratio = source.width / source.height;
         if (ratio >= 1 && source.width > value) {
             source.width = value

@@ -115,7 +115,7 @@
             async loadImage(src) {
                 showLoading("图片加载中");
                 var res = await getImageInfo(src);
-                updateImageInfo(res, 300000) // 30w像素点
+                updateImageInfo(res, 250000) // 20w像素点
                 DRAW_IMAGE_W = IMG_REAL_W = res.width;
                 IMG_REAL_H = res.height;
                 IMG_RATIO = IMG_REAL_W / IMG_REAL_H;
