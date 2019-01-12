@@ -239,13 +239,13 @@ export async function updateTestOrReciteExam(examId, updateType) {
  * @param {String} examId  题目ID
  * @param {String} newImgId  新图片ID
  */
-export async function updateEditedImg(examId, newImgId) {
+export async function updateEditedImg(examId, newImgId, is_paint) {
     try {
         const res = await examTable.doc(examId).update({
             data: {
                 edited_img_id: newImgId,
                 update_time: db.serverDate(),
-                is_paint: 1
+                is_paint: is_paint
             }
         });
         if (typeof (res) != 'undefined' && res.stats.updated == 1) {

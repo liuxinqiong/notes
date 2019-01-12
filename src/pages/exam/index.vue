@@ -8,7 +8,7 @@
                         <div id="exam" class="wrapper">
                             <img :src="current.original_img_id" :style="{height: canvasHeight, width: canvasWidth}" alt="">
                             <canvas canvas-id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
-                            @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
+                                @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
                             <cover-view class="mask" v-if="!current.is_paint&&showCanvas" :style="{top: maskTop + 'px'}">
                                 <button class="handler" @touchstart.stop="handlerStart" @touchmove.stop="handlerMove">
                                     <cover-image class="img" src="../../static/handler.png"></cover-image>
@@ -144,7 +144,7 @@
                 }
             },
             handlerMove(e) {
-                if(!this.handlerTouch.initiated) {
+                if (!this.handlerTouch.initiated) {
                     return
                 }
                 const touch = e.touches[0]
@@ -154,7 +154,7 @@
                     return
                 }
                 const res = this.maskTop + deltaY
-                if(res >= 0 && res <= this.canvasWrapper.height - 10) {
+                if (res >= 0 && res <= this.canvasWrapper.height + 1) {
                     this.maskTop = res
                 }
                 this.handlerTouch = {
@@ -174,14 +174,15 @@
             },
             async save() {
                 const isPaint = this.canvasWrapper.isPaint()
-                if (!isPaint) {
+                const onlyEraser = this.canvasWrapper.onlyEraser()
+                if (!isPaint || onlyEraser) {
                     showToast('没有修改，无需保存')
                     return
                 }
                 showLoading('保存中')
                 const path = await this.canvasWrapper.saveToTempFilePath()
                 const newId = await uploadExamImg(path)
-                const res = await updateEditedImg(this.current._id, newId)
+                const res = await updateEditedImg(this.current._id, newId, this.canvasWrapper.getPaintByClearValue())
                 if (res) {
                     showSuccess('保存成功')
                     // 旧图片清理
@@ -304,7 +305,7 @@
                 this.loadItem(0)
             },
             async onGotUserInfo(e) {
-                if(e.mp.detail.userInfo) {
+                if (e.mp.detail.userInfo) {
                     showLoading('正在保存')
                     const avatarInfo = await getImageInfo(e.mp.detail.userInfo.avatarUrl)
                     this.saveLocal(avatarInfo.path, e.mp.detail.userInfo.nickName)
@@ -313,7 +314,7 @@
                 }
             },
             async saveLocal(avatar, name) {
-                const roundRect = function(ctx, x, y, w, h, r) {
+                const roundRect = function (ctx, x, y, w, h, r) {
                     var min_size = Math.min(w, h);
                     if (r > min_size / 2) r = min_size / 2;
                     // 开始绘制
@@ -325,20 +326,20 @@
                     ctx.arcTo(x, y, x + w, y, r);
                     ctx.closePath();
                 }
-                const computeStar = function(starNo) {
+                const computeStar = function (starNo) {
                     const fullStar = '../../static/full.png'
                     const emptyStar = '../../static/empty.png'
-                    if(starNo === 0) {
+                    if (starNo === 0) {
                         return [emptyStar, emptyStar, emptyStar]
-                    } else if(starNo === 1){
+                    } else if (starNo === 1) {
                         return [fullStar, emptyStar, emptyStar]
-                    } else if(starNo === 2) {
+                    } else if (starNo === 2) {
                         return [fullStar, fullStar, emptyStar]
                     } else {
                         return [fullStar, fullStar, fullStar]
                     }
                 }
-                const drawStar = function(ctx, star1, star2, star3) {
+                const drawStar = function (ctx, star1, star2, star3) {
                     ctx.drawImage(star1, 68, 74, 67, 65)
                     ctx.drawImage(star2, 150, 53, 56, 54)
                     ctx.drawImage(star3, 224, 74, 67, 65)
@@ -401,7 +402,7 @@
                             }
                         })
                     })
-                } catch(e) {
+                } catch (e) {
                     console.log(e)
                     hideLoading()
                 }
@@ -411,7 +412,7 @@
                 this.maskTop = 0 // 重置为0
                 let edited_img_src
                 // 涂鸦过，下载遮盖
-                if(this.list[index].edited_img_id) {
+                if (this.list[index].is_paint && this.list[index].edited_img_id) {
                     edited_img_src = await downloadFile(this.list[index].edited_img_id)
                 }
                 this.current = {
@@ -420,7 +421,8 @@
                     last_answer_time: this.list[index].last_answer_time.format('yyyy.MM.dd hh:mm')
                 }
                 console.log(this.current._id)
-                this.canvasWrapper = new CanvasWrapper('exam', this.current.img_width, this.current.img_height, edited_img_src)
+                this.canvasWrapper = new CanvasWrapper('exam', this.current.img_width, this.current.img_height,
+                    edited_img_src)
                 this.canvasHeight = this.canvasWrapper.height + 'px'
                 this.canvasWidth = this.canvasWrapper.width + 'px'
                 this.canvasWrapper.drawImage(true)
@@ -431,7 +433,7 @@
                 showLoading('加载题库中')
                 try {
                     this.allExams = await func(...args)
-                    if(!this.allExams || this.allExams.length === 0) {
+                    if (!this.allExams || this.allExams.length === 0) {
                         showToast('错题库空空如也，先去录题吧')
                         setTimeout(() => {
                             wx.reLaunch({
@@ -440,7 +442,7 @@
                         }, 1500)
                         return
                     }
-                    if(this.mode === MODE.STUDY) {
+                    if (this.mode === MODE.STUDY) {
                         this.list = this.allExams
                     } else {
                         this.list = generateExamList(this.allExams, 0, 30)
@@ -513,6 +515,7 @@
             .wrapper {
                 position: relative;
             }
+
             img {
                 position: absolute;
                 left: 0;
@@ -524,12 +527,14 @@
                 width: 100%;
                 margin: auto;
             }
+
             .mask {
                 position: absolute;
                 top: 0;
-                bottom: 0;
+                bottom: -20rpx;
                 width: 100%;
                 background-color: rgb(244, 213, 121);
+
                 .handler {
                     position: absolute;
                     left: 0;
@@ -538,15 +543,18 @@
                     width: 51rpx;
                     height: 95rpx;
                     background-color: transparent;
+
                     .img {
                         width: 100%;
                         height: 100%;
                     }
                 }
             }
+
             .time {
                 color: #FFF;
                 font-size: 20rpx;
+                margin-top: 20rpx;
             }
         }
 

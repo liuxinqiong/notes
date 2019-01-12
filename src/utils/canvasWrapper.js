@@ -10,6 +10,7 @@ export default class CanvasWrapper {
         this.touchmoveEnable = true
         this.context = wx.createCanvasContext(canvasId)
         this.erased = false
+        this.clearAll = false
         this.touch = {}
     }
 
@@ -60,6 +61,7 @@ export default class CanvasWrapper {
 
     // 涂抹
     scrawl(x, y) {
+        this.clearAll = false
         if (!this.touchmoveEnable) {
             return
         }
@@ -158,5 +160,15 @@ export default class CanvasWrapper {
         this.erased = true
         this.context.clearRect(0, 0, this.width, this.height)
         this.context.draw()
+        this.clearAll = true
+    }
+
+    onlyEraser() {
+        return typeof (this.imageSrc) == 'undefined' && this.executeActions
+            .length <= 0 //卷帘模式只有擦除
+    }
+
+    getPaintByClearValue() {
+        return this.clearAll ? false : true
     }
 }
