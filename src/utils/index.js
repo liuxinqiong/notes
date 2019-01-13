@@ -1,6 +1,7 @@
 import config, {
     RES_CODE,
-    COMPRESS_SETTING
+    COMPRESS_SETTING,
+    USED_HEIGHT
 } from '@/config'
 
 function formatNumber(n) {
@@ -180,11 +181,16 @@ export async function computeCanvasInfo(imageSrc, container) {
     const data = await Promise.all([getImageInfo(imageSrc), getNodeRect(container)])
     const [imageInfo, containerInfo] = data
     const radio = imageInfo.width / imageInfo.height
-    const res = wx.getSystemInfoSync()
-    // 不要问我为啥630，手动算出来的，缺点：不够弹性，此为待优化处
-    const maxHeight = res.windowHeight - (630 * res.windowWidth / 750)
     let canvasWidth = containerInfo.width
     let canvasHeight = canvasWidth / radio
+    return resizeCanvasInfo(canvasWidth, canvasHeight)
+}
+
+// 更换不同手机，可能导致显示被遮挡，需要根据实际情况重新调整显示高度
+export function resizeCanvasInfo(canvasWidth, canvasHeight) {
+    const res = wx.getSystemInfoSync()
+    const maxHeight = res.windowHeight - (USED_HEIGHT * res.windowWidth / 750)
+    const radio = canvasWidth / canvasHeight
     if (maxHeight < canvasHeight) {
         canvasHeight = maxHeight
         canvasWidth = maxHeight * radio

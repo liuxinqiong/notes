@@ -100,7 +100,8 @@
         showToast,
         generateExamList,
         getNodeRect,
-        getImageInfo
+        getImageInfo,
+        resizeCanvasInfo
     } from '@/utils'
     import {
         resetPageData
@@ -421,8 +422,8 @@
                     last_answer_time: this.list[index].last_answer_time.format('yyyy.MM.dd hh:mm')
                 }
                 console.log(this.current._id)
-                this.canvasWrapper = new CanvasWrapper('exam', this.current.img_width, this.current.img_height,
-                    edited_img_src)
+                const {canvasWidth, canvasHeight} = resizeCanvasInfo(this.current.img_width, this.current.img_height)
+                this.canvasWrapper = new CanvasWrapper('exam', canvasWidth, canvasHeight, edited_img_src)
                 this.canvasHeight = this.canvasWrapper.height + 'px'
                 this.canvasWidth = this.canvasWrapper.width + 'px'
                 this.canvasWrapper.drawImage(true)

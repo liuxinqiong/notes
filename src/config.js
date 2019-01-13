@@ -14,4 +14,7 @@ export const COMPRESS_SETTING = {
     ANDROID_COMPRESS_CHANGE_RATE: 0.0000002,
     ANDROID_START_COMPRESS_RATE: 0.9
 }
+
+export const USED_HEIGHT = 650 // // 不要问我为啥，手动算出来的，缺点：不够弹性，此为待优化处
+
 export default config
