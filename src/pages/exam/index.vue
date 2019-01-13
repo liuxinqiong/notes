@@ -17,12 +17,12 @@
                         </div>
                         <p class="time">{{current.last_answer_time}}</p>
                     </div>
-                    <div class="buttons">
-                        <button class="scrawl" @click="scrawl"></button>
-                        <button class="eraser" @click="eraser"></button>
-                        <button class="clear" @click="clear"></button>
-                        <button class="save" @click="save"></button>
-                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="scrawl" @click="scrawl"></button>
+                    <button class="eraser" @click="eraser"></button>
+                    <button class="clear" @click="clear"></button>
+                    <button class="save" @click="save"></button>
                 </div>
                 <div class="bottom">
                     <button class="mode1 error" v-if="mode" @click="errorHandler"></button>
@@ -494,7 +494,7 @@
         .scroll {
             position: absolute;
             top: 52rpx;
-            bottom: 200rpx;
+            bottom: 310rpx;
             left: 18rpx;
             right: 18rpx;
         }
@@ -559,6 +559,10 @@
         }
 
         .buttons {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 180rpx;
             margin-top: 10rpx;
             display: flex;
 
