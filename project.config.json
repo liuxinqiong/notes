@@ -10,7 +10,7 @@
 	},
 	"miniprogramRoot": "dist/wx/",
 	"compileType": "miniprogram",
-	"appid": "wx4e5f3ee465de67b2",
+	"appid": "wx57711e38ae1775f6",
 	"projectname": "notes",
 	"cloudfunctionRoot": "functions/",
 	"libVersion": "2.4.4",

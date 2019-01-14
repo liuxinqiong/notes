@@ -9,11 +9,13 @@
                             <img :src="current.original_img_id" :style="{height: canvasHeight, width: canvasWidth}" alt="">
                             <canvas canvas-id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
                                 @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
-                            <cover-view class="mask" v-if="!current.is_paint&&showCanvas" :style="{top: maskTop + 'px'}">
-                                <button class="handler" @touchstart.stop="handlerStart" @touchmove.stop="handlerMove">
+                            <div class="mask" v-if="!current.is_paint&&showCanvas&&!openDraw" :style="{top: maskTop + 'px'}">
+                                <!-- <button class="handler" @touchstart.stop="handlerStart" @touchmove.stop="handlerMove">
                                     <cover-image class="img" src="../../static/handler.png"></cover-image>
-                                </button>
-                            </cover-view>
+                                </button> -->
+                                <image class="img" src="../../static/handler.png" @touchstart.stop="handlerStart"
+                                    @touchmove.stop="handlerMove" />
+                            </div>
                         </div>
                         <p class="time">{{current.last_answer_time}}</p>
                     </div>
@@ -101,7 +103,8 @@
         generateExamList,
         getNodeRect,
         getImageInfo,
-        resizeCanvasInfo
+        resizeCanvasInfo,
+        takePhoto
     } from '@/utils'
     import {
         resetPageData
@@ -128,7 +131,8 @@
                 rightCount: 0,
                 starNo: 0,
                 maskTop: 0,
-                showCanvas: true // canvas 层级太高
+                showCanvas: true, // canvas 层级太高
+                openDraw: false
             }
         },
         components: {
@@ -145,6 +149,7 @@
                 }
             },
             handlerMove(e) {
+                console.log(e)
                 if (!this.handlerTouch.initiated) {
                     return
                 }
@@ -166,6 +171,7 @@
             },
             scrawl() {
                 this.currentMode = this.currentMode === 'scrawl' ? 'normal' : 'scrawl'
+                this.openDraw = true
             },
             eraser() {
                 this.currentMode = this.currentMode === 'eraser' ? 'normal' : 'eraser'
@@ -411,6 +417,8 @@
             async loadItem(index) {
                 showLoading('加载题目中')
                 this.maskTop = 0 // 重置为0
+                this.currentMode = 'normal'
+                this.openDraw = false
                 let edited_img_src
                 // 涂鸦过，下载遮盖
                 if (this.list[index].is_paint && this.list[index].edited_img_id) {
@@ -422,7 +430,10 @@
                     last_answer_time: this.list[index].last_answer_time.format('yyyy.MM.dd hh:mm')
                 }
                 console.log(this.current._id)
-                const {canvasWidth, canvasHeight} = resizeCanvasInfo(this.current.img_width, this.current.img_height)
+                const {
+                    canvasWidth,
+                    canvasHeight
+                } = resizeCanvasInfo(this.current.img_width, this.current.img_height)
                 this.canvasWrapper = new CanvasWrapper('exam', canvasWidth, canvasHeight, edited_img_src)
                 this.canvasHeight = this.canvasWrapper.height + 'px'
                 this.canvasWidth = this.canvasWrapper.width + 'px'
@@ -435,12 +446,23 @@
                 try {
                     this.allExams = await func(...args)
                     if (!this.allExams || this.allExams.length === 0) {
-                        showToast('错题库空空如也，先去录题吧')
-                        setTimeout(() => {
-                            wx.reLaunch({
-                                url: `/pages/index/main`
-                            });
-                        }, 1500)
+                        hideLoading();
+                        wx.showModal({
+                            //title: '提示',
+                            content: '题库中空空如也，快去录题吧',
+                            async success(res) {
+                                if (res.confirm) {
+                                    const tempFilePath = await takePhoto();
+                                    wx.redirectTo({
+                                        url: `/pages/cropper/main?src=${tempFilePath}`
+                                    });
+                                } else if (res.cancel) {
+                                    wx.reLaunch({
+                                        url: '/pages/index/main'
+                                    })
+                                }
+                            }
+                        })
                         return
                     }
                     if (this.mode === MODE.STUDY) {
@@ -513,6 +535,8 @@
         }
 
         .img-wrapper {
+            overflow: hidden;
+
             .wrapper {
                 position: relative;
             }
@@ -535,6 +559,7 @@
                 bottom: -20rpx;
                 width: 100%;
                 background-color: rgb(244, 213, 121);
+                overflow: hidden;
 
                 .handler {
                     position: absolute;
@@ -546,9 +571,21 @@
                     background-color: transparent;
 
                     .img {
-                        width: 100%;
-                        height: 100%;
+                        // width: 100%;
+                        // height: 100%;
+                        width: 51rpx;
+                        height: 95rpx;
+                        margin-left: -25.5rpx;
                     }
+                }
+
+                .img {
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    margin: auto;
+                    width: 51rpx;
+                    height: 95rpx;
                 }
             }
 

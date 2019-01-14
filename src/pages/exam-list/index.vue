@@ -101,10 +101,27 @@
                 var getList = await this.loadData(); //加载数据
                 if (getList == null || getList.length == 0) {
                     hideLoading();
-                    wx.showToast({
-                        title: "题库中空空如也，快去录题吧",
-                        icon: "none"
-                    });
+                    // wx.showToast({
+                    //     title: "题库中空空如也，快去录题吧",
+                    //     icon: "none"
+                    // });
+
+                    wx.showModal({
+                        // title: '提示',
+                        content: '题库中空空如也，快去录题吧',
+                        async success(res) {
+                            if (res.confirm) {
+                                const tempFilePath = await takePhoto();
+                                wx.navigateTo({
+                                    url: `/pages/cropper/main?src=${tempFilePath}`
+                                });
+                            } else if (res.cancel) {
+                                wx.reLaunch({
+                                    url: '/pages/index/main'
+                                })
+                            }
+                        }
+                    })
                     return;
                 }
                 this.sortResponseList(getList);
