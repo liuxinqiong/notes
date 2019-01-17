@@ -6,9 +6,9 @@
                 <div class="scroll">
                     <div class="img-wrapper">
                         <div id="exam" class="wrapper">
-                            <img :src="current.original_img_id" :style="{height: canvasHeight, width: canvasWidth}" alt="">
+                            <img :src="current.original_img_id" @load="imageLoaded" :style="{height: canvasHeight, width: canvasWidth}" alt="">
                             <canvas canvas-id="exam" :style="{height: canvasHeight, width: canvasWidth}" disable-scroll="true"
-                                @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-show="showCanvas"></canvas>
+                                @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend" v-if="showCanvas" :class="{moveout: !(current.is_paint||openDraw)}"></canvas>
                             <div class="mask" v-if="!current.is_paint&&showCanvas&&!openDraw" :style="{top: maskTop + 'px'}">
                                 <!-- <button class="handler" @touchstart.stop="handlerStart" @touchmove.stop="handlerMove">
                                     <cover-image class="img" src="../../static/handler.png"></cover-image>
@@ -78,10 +78,10 @@
     import layer from '@/components/layer/layer'
     import star from '@/components/star/star'
     import {
-        loadExamsOrderByAnswerTimeFromOne,
+        loadExamsOrderByAnswerTimeFromOneByCloud,
         updateEditedImg,
         loadAllExamsOrderByWeight,
-        loadAllExamsOrderByAnswerTime,
+        loadAllExamsOrderByAnswerTimeByCloud,
         updateTestOrReciteExam,
         insertTestRecord,
         insertAnswerRecord,
@@ -141,6 +141,9 @@
             star
         },
         methods: {
+            imageLoaded() {
+                this.current.is_paint = this.current.is_paint_bak
+            },
             handlerStart(e) {
                 this.handlerTouch = {
                     startX: e.touches[0].pageX,
@@ -149,7 +152,6 @@
                 }
             },
             handlerMove(e) {
-                console.log(e)
                 if (!this.handlerTouch.initiated) {
                     return
                 }
@@ -427,9 +429,10 @@
                 this.current = {
                     ...this.list[index],
                     edited_img_src,
-                    last_answer_time: this.list[index].last_answer_time.format('yyyy.MM.dd hh:mm')
+                    last_answer_time: new Date(this.list[index].last_answer_time).format('yyyy.MM.dd hh:mm'),//云函数返回date类型为String 转换下
+                    is_paint_bak: this.list[index].is_paint,
+                    is_paint: false
                 }
-                console.log(this.current._id)
                 const {
                     canvasWidth,
                     canvasHeight
@@ -479,14 +482,23 @@
             async startTest() {
                 // 测验
                 if (this.mode == MODE.EXAM) {
+                    wx.setNavigationBarTitle({
+                        title: '测验'
+                    })
+
                     this.exam_test_id = await insertTestRecord()
-                    if (this.fromId) {
-                        this.loadList(loadExamsOrderByAnswerTimeFromOne, this.fromId)
-                    } else {
-                        this.loadList(loadAllExamsOrderByWeight)
-                    }
+                    this.loadList(loadAllExamsOrderByWeight)
+
                 } else {
-                    this.loadList(loadAllExamsOrderByAnswerTime)
+                     wx.setNavigationBarTitle({
+                        title: '背诵'
+                    })
+                    if (this.fromId) {
+                        this.loadList(loadExamsOrderByAnswerTimeFromOneByCloud, this.fromId)
+                    } else {
+                        this.loadList(loadAllExamsOrderByAnswerTimeByCloud)
+                    }
+
                 }
             }
         },
@@ -551,6 +563,9 @@
             canvas {
                 width: 100%;
                 margin: auto;
+                &.moveout {
+                    transform: translate3d(500%, 0, 0);
+                }
             }
 
             .mask {

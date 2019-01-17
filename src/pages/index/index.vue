@@ -13,9 +13,11 @@
                     <img src="./img/subject.png" alt="">
                 </div>
                 <div class="info">
-                    <p class="text">1.通过手机拍照，并且，涂抹答案，录入题库</p>
-                    <p class="text">2.点击开始，开始答题，答题后，判断对错。</p>
-                    <p class="text">3.根据记忆曲线，给出题库里的类容。</p>
+                    <p class="text">1.点击录题，通过拍照记录，懒娃框选区域或涂抹，保存录入题库。</p>
+                    <p class="text">2.点击错题库，可增加/删除录题。点击单项录题，顺序背诵题目。</p>
+                    <p class="text">3.点击背诵，懒娃根据遗忘曲线出题记忆，可涂抹易错易忘记题目。</p>
+                    <p class="text">4.点击测验，家长判断对错，懒娃按照顺序答题，最多每组30道题。</p>
+                    <p class="text">5.问题咨询联系客服微信：<font>18071024540。</font> </p>
                 </div>
                 <div class="buttons">
                     <a href="/pages/exam/main?mode=0" class="recite"></a>
@@ -62,6 +64,7 @@
 
 </script>
 <style lang="scss" scoped>
+    @import '@/styles/mixin.scss';
     .container {
         position: absolute;
         left: 0;
@@ -130,29 +133,33 @@
                 overflow: hidden;
                 .logo {
                     text-align: center;
-                    margin-top: 50rpx;
+                    margin-top: 15rpx;
                     img {
                         width: 349rpx;
-                        height: 133rpx;
+                        height: 180rpx;
                         vertical-align:middle;
                     }
                 }
                 .info {
-                    margin-top: 12rpx;
+                    margin-top: 0rpx;
                     width: 479rpx;
-                    height: 344rpx;
+                    height: 409rpx;
                     margin: auto;
                     background: url('./img/center.png') no-repeat;
                     background-size: 100% 100%;
                     color: #C65D00;
-                    font-size: 24rpx;
+                    font-size: 23rpx;
                     box-sizing: border-box;
-                    padding: 80rpx 56rpx 0 65rpx;
+                    padding: 44rpx 56rpx 0 65rpx;
                     .text {
                         line-height: 28rpx;
+                        @include line-number;
+                        font{
+                            padding-left: 20rpx;
+                        }
                     }
                     .text + .text {
-                        margin-top: 22rpx;
+                        margin-top: 15rpx;
                     }
                 }
                 .buttons {
@@ -181,7 +188,7 @@
 
         .add-exam {
             position: absolute;
-            bottom: 52rpx;
+            bottom: 40rpx;
             right: 90rpx;
             width: 186rpx;
             height: 68rpx;

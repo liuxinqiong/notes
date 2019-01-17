@@ -226,9 +226,11 @@
                             fileIds.push(this.deleteList[index].eidted_img_id);
                         }
                     }
-                    let deleteFiles = await deleteFile(fileIds); //删除文件
                     hideLoading();
-                    await this.reload(); //刷新重新加载
+                    deleteFile(fileIds); //删除文件
+                    this.reload(); //刷新重新加载
+
+
                     // arrayRemove(this.examList, function (n) { //不重新加载页面删除元素 后台处理删除
                     //     return n.id === element.id;
                     // });
@@ -240,7 +242,7 @@
             itemClick(checked, exam) {
                 if (!this.isEidt) {
                     wx.navigateTo({
-                        url: `/pages/exam/main?mode=1&sort=time&_id=` + exam._id
+                        url: `/pages/exam/main?mode=0&sort=time&_id=` + exam._id
                     });
                     return; //非编辑状态事件无效
                 }
@@ -249,7 +251,7 @@
                 } else {
                     var index = this.deleteList.indexOf[exam];
                     arrayRemove(this.deleteList, function (n) {
-                        return n.id === exam.id; //根据ID匹配
+                        return n._id === exam._id; //根据ID匹配
                     });
                 }
             }

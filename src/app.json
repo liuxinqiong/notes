@@ -10,7 +10,7 @@
     "window": {
         "backgroundTextStyle": "light",
         "navigationBarBackgroundColor": "#5EB6ED",
-        "navigationBarTitleText": "错题库",
+        "navigationBarTitleText": "懒学生学习神器",
         "navigationBarTextStyle": "light"
     },
     "cloud": true

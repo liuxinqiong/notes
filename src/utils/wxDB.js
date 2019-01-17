@@ -68,6 +68,21 @@ export async function loadAllExamsOrderByAnswerTime() {
     }
     return null;
 }
+/**
+ *获取所有按答题时间排序的题目列表  [背诵] *云函数调用*
+ */
+export async function loadAllExamsOrderByAnswerTimeByCloud(){
+    try {
+        const res = await wx.cloud.callFunction({
+            // 要调用的云函数名称
+            name: 'loadAllExamsOrderByAnswerTime'
+        });
+        return res.result;
+    } catch (error) {
+        console.error(error);
+    }
+    return 0;
+}
 
 /**
  * 调用云函数批量删除题目
@@ -91,7 +106,25 @@ export async function deleteExamCallCloudByIds(ids) {
     }
     return 0;
 }
-
+/**
+ * 从某题开始按答题顺序获取所有题目  [顺序答题] *云函数调用*
+ * @param {String} examId 当前开始答题的ID
+ */
+export async function loadExamsOrderByAnswerTimeFromOneByCloud(examId){
+    try {
+        const res = await wx.cloud.callFunction({
+            // 要调用的云函数名称
+            name: 'loadExamsOrderByAnswerTimeFromOne',
+            data: {
+                examId: examId
+            }
+        });
+        return res.result;
+    } catch (error) {
+        console.error(error);
+    }
+    return 0;
+}
 /**
  * 从某题开始按答题顺序获取所有题目  [顺序答题]
  * @param {String} examId 当前开始答题的ID
@@ -156,19 +189,19 @@ export async function loadExamsOrderByAnswerTimeFromOne(examId) {
  */
 export async function loadAllExamsOrderByWeight() {
     const now = new Date();
-    let allData = await loadAllExamsOrderByAnswerTime(); //先获取所有的数据
+    let allData = await loadAllExamsOrderByAnswerTimeByCloud(); //先获取所有的数据
 
     if (allData == null || allData.length == 0) {
         return null; //无数据
     }
     allData.sort(function (a, b) {
-        let aWeight = getTimeWeight(now.getTime() - a.last_answer_time.getTime()) + a.answer_weight;
-        let bWeight = getTimeWeight(now.getTime() - b.last_answer_time.getTime()) + b.answer_weight;
+        let aWeight = getTimeWeight(now.getTime() - new Date(a.last_answer_time).getTime()) + a.answer_weight;
+        let bWeight = getTimeWeight(now.getTime() - new Date(b.last_answer_time).getTime()) + b.answer_weight;
         aWeight = aWeight < MIN_WEIGHT ? MIN_WEIGHT : aWeight;
         aWeight = aWeight > MAX_WEIGHT ? MAX_WEIGHT : aWeight;
         bWeight = bWeight < MIN_WEIGHT ? MIN_WEIGHT : bWeight;
         bWeight = bWeight > MAX_WEIGHT ? MAX_WEIGHT : bWeight;
-        if ((aWeight > bWeight) || (aWeight == bWeight && a.last_answer_time.getTime() < b.last_answer_time.getTime())) {
+        if ((aWeight > bWeight) || (aWeight == bWeight && new Date(a.last_answer_time).getTime() < new Date(b.last_answer_time).getTime())) {
             return -1;
         }
         return 1;
